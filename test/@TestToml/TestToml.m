@@ -8,6 +8,12 @@ classdef TestToml < matlab.unittest.TestCase
         'Improper interpretation of a comment')
     end
 
+    function testKeyValueForm(testCase)
+      toml_str = 'key = #';
+      testCase.assertError(@() toml.parse(toml_str), ...
+        'toml:UnspecifiedValue', 'Did not fail for unspecified value')
+    end
+
   end
 
 end
