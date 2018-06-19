@@ -9,4 +9,10 @@ function checkline(in)
     error('toml:UnspecifiedValue', ...
           'TOML keys must have a corresponding value.')
   end
+
+  % check for empty (bare) key
+  if in(1) == '='
+    error('toml:EmptyBareKey', ...
+          'TOML bare keys must not be empty.')
+  end
 end

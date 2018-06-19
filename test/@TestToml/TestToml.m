@@ -14,6 +14,12 @@ classdef TestToml < matlab.unittest.TestCase
         'toml:UnspecifiedValue', 'Did not fail for unspecified value')
     end
 
+    function testEmptyBareKey(testCase)
+      toml_str = '\nkey = "value"\n= "value2"';
+      testCase.assertError(@() toml.parse(toml_str), ...
+        'toml:EmptyBareKey', 'Did not fail for unspecified value')
+    end
+
   end
 
 end
