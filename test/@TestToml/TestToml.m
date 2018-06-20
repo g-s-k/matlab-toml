@@ -4,7 +4,7 @@ classdef TestToml < matlab.unittest.TestCase
 
     function testComment(testCase)
       toml_str = '\n# this is a comment\n';
-      testCase.assertEmpty(toml.parse(toml_str), ...
+      testCase.assertEmpty(fieldnames(toml.parse(toml_str)), ...
         'Improper interpretation of a comment')
     end
 
