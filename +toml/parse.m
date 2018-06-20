@@ -15,6 +15,7 @@ function obj_out = parse(toml_str)
   obj_out = struct();
   current_line = 1;
   location_stack = {};
+  cleaner = @matlab.lang.makeValidName;
 
   while current_line <= length(toml_nonempty)
     % recognize a section and store it semantically
@@ -22,15 +23,17 @@ function obj_out = parse(toml_str)
     section_name = regexp(toml_nonempty{current_line}, section_regexp, ...
                           'tokens');
     if ~isempty(section_name)
-      location_stack = strsplit(section_name{:}{:}, '.');
+      location_stack = cellfun(cleaner, strsplit(section_name{:}{:}, '.'), ...
+                               'uniformoutput', false);
       current_line = current_line + 1;
       continue
     end
 
     % recognize key-value pairs and add them to the struct
     [key, value] = strtok(toml_nonempty{current_line}, '=');
-    value_fix = value(2:end);
-    obj_out = setfield(obj_out, location_stack{:}, key, value_fix);
+    key_seq = cellfun(cleaner, strsplit(key, '.'), 'uniformoutput', false);
+    value_fix = parsevalue(value);
+    obj_out = setfield(obj_out, location_stack{:}, key_seq{:}, value_fix);
     current_line = current_line + 1;
   end
 end
