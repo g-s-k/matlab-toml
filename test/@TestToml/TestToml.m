@@ -243,11 +243,13 @@ classdef TestToml < matlab.unittest.TestCase
       toml_str = { ...
           'key = [1, 2, 3]' ...
         , 'key = ["a", "b", "c"]' ...
+        , 'key = [[1, 2], [''a'', "b"]]'
                  };
 
       % matlab versions, respectively
       matl_obj(1).key = [1, 2, 3];
       matl_obj(2).key = {'a', 'b', 'c'};
+      matl_obj(3).key = {[1, 2], {'a', 'b'}};
 
       % check each one in turn
       for indx = 1:length(toml_str)

@@ -180,7 +180,22 @@ function val = parsevalue(str)
       val = trimmed_val(2:end-1);
     end
 
-    val = strsplit(val, ',');
+    % split array while respecting nesting
+    depth = 0;
+    for ch = 1:length(val)
+      switch val(ch)
+        case '['
+          depth = depth + 1;
+        case ']'
+          depth = depth - 1;
+        case ','
+          if depth == 0
+            val(ch) = char(0);
+          end
+      end
+    end
+    val = strsplit(val, char(0));
+
     val = cellfun(@strtrim, val, 'uniformoutput', false);
     val = cellfun(@parsevalue, val, 'uniformoutput', false);
     if all(cellfun(@isnumeric, val))
