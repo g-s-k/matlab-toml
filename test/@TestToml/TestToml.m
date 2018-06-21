@@ -245,6 +245,8 @@ classdef TestToml < matlab.unittest.TestCase
         , 'key = ["a", "b", "c"]' ...
         , 'key = [[1, 2], [''a'', "b"]]' ...
         , 'key = ["abcd", "comma, separated, values"]' ...
+        , sprintf('key = [\n1, 2, 3\n]') ...
+        , sprintf('key = [\n1,\n2,\n]') ...
                  };
 
       % matlab versions, respectively
@@ -252,6 +254,8 @@ classdef TestToml < matlab.unittest.TestCase
       matl_obj(2).key = {'a', 'b', 'c'};
       matl_obj(3).key = {[1, 2], {'a', 'b'}};
       matl_obj(4).key = {'abcd', 'comma, separated, values'};
+      matl_obj(5).key = [1, 2, 3];
+      matl_obj(6).key = [1, 2];
 
       % check each one in turn
       for indx = 1:length(toml_str)

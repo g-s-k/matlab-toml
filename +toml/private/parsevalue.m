@@ -202,6 +202,7 @@ function val = parsevalue(str)
     val = strsplit(val, char(0));
 
     val = cellfun(@strtrim, val, 'uniformoutput', false);
+    val = val(~cellfun(@isempty, val));
     val = cellfun(@parsevalue, val, 'uniformoutput', false);
     if all(cellfun(@isnumeric, val))
       val = cell2mat(val);
