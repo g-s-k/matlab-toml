@@ -181,15 +181,20 @@ function val = parsevalue(str)
     end
 
     % split array while respecting nesting
-    depth = 0;
+    array_depth = 0;
+    num_quotes = [0, 0];
     for ch = 1:length(val)
       switch val(ch)
         case '['
-          depth = depth + 1;
+          array_depth = array_depth + 1;
         case ']'
-          depth = depth - 1;
+          array_depth = array_depth - 1;
+        case ''''
+          num_quotes(1) = num_quotes(1) + 1;
+        case '"'
+          num_quotes(2) = num_quotes(2) + 1;
         case ','
-          if depth == 0
+          if array_depth == 0 && ~any(mod(num_quotes, 2))
             val(ch) = char(0);
           end
       end
