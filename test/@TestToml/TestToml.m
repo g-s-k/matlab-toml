@@ -85,6 +85,17 @@ classdef TestToml < matlab.unittest.TestCase
         'Did not parse a multiline basic string with a LEB successfully.')
     end
 
+    function testLiteralString(testCase)
+      toml_str1 = 'key = ''C:\Users\example.txt''';
+      toml_str2 = sprintf('key = ''''''\nNo leading newline here.''''''');
+      testCase.verifyEqual(toml.parse(toml_str1), ...
+       struct('key', 'C:\Users\example.txt'), ...
+       'Did not parse a literal string with backslashes successfully.')
+      testCase.verifyEqual(toml.parse(toml_str2), ...
+       struct('key', 'No leading newline here.'), ...
+       'Did not parse a literal string with a leading newline successfully.')
+    end
+
   end
 
 end

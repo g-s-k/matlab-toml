@@ -86,4 +86,29 @@ function val = parsevalue(str)
     val = regexprep(val, ucode_match, ucode_replace);
   end
 
+  % literal strings
+  if trimmed_val(1) == ''''
+    % is it multiline and complete?
+    if isequal(trimmed_val(1:3), '''''''') && ...
+       numel(trimmed_val) > 3 && ...
+       isequal(trimmed_val(end-2:end), '''''''')
+      % remove quotes
+      val = trimmed_val(4:end-3);
+      % remove leading newline
+      if val(1) == sprintf('\n')
+        val = val(2:end);
+      end
+
+    % is it complete but not multiline?
+    elseif trimmed_val(2) ~= '''' && trimmed_val(end) == ''''
+      % remove quotes
+      val = trimmed_val(2:end-1);
+
+    % newline in string, tell caller the value is incomplete
+    else
+      val = '';
+      return
+    end
+  end
+
 end
