@@ -80,6 +80,8 @@ function val = parsevalue(str)
     % common post-processing
     % escaped quotes
     val = strrep(val, '\"', '"');
+    % escaped characters
+    val = regexprep(val, '(\\[btnfr\\])', '${sprintf($1)}');
     % unicode points
     ucode_match = '\\(u[A-Fa-f0-9]{4}|U[A-Fa-f0-9]{8})';
     ucode_replace = '${char(hex2dec($1(2:end)))}';
