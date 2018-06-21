@@ -113,4 +113,58 @@ function val = parsevalue(str)
     end
   end
 
+%% datetimes
+
+  % make regexes
+  is_match = @(s, p) ~isempty(regexp(s, p));
+  whole_line_match = @(p) is_match(trimmed_val, ['^', p, '$']);
+  date_regexp = '\d{4}-\d{2}-\d{2}';
+  upto12 = '(01|02|03|04|05|06|07|08|09|10|11|12)';
+  fract_sec = '\.\d{1,9}';
+  time_regexp = [upto12, ':[0-6]\d:[0-6]\d(', fract_sec, ')?'];
+  offset_regexp = ['(Z|[-+]', upto12, ':[0-6]\d(:[0-6]\d)?)'];
+
+  % see what fits
+  has_date = is_match(trimmed_val, date_regexp);
+  has_time = is_match(trimmed_val, time_regexp);
+  is_datetime = has_date && has_time;
+  is_datetime_t = is_datetime && ...
+      is_match(trimmed_val, [date_regexp, 'T', time_regexp]);
+  is_datetime_space = is_datetime &&  ~is_datetime_t && ...
+      is_match(trimmed_val, [date_regexp, ' ', time_regexp]);
+  has_fr_sec = has_time && is_match(trimmed_val, fract_sec);
+  has_offset = has_time && is_match(trimmed_val, offset_regexp);
+
+  % make formats
+  date_fmt = 'yyyy-MM-dd';
+  time_fmt = 'HH:mm:ss';
+  fract_sec_fmt = '.SSSSSSSSS';
+
+  % do what we can with it
+  if is_datetime
+    dtargs = {};
+    if is_datetime_t
+      fmt_str = [date_fmt, '''T''', time_fmt];
+    else
+      fmt_str = [date_fmt, ' ', time_fmt];
+    end
+    if has_fr_sec
+      fmt_str = [fmt_str, fract_sec_fmt];
+    end
+    if has_offset
+      fmt_str = [fmt_str, 'Z'];
+      dtargs = {'TimeZone', 'UTC'};
+    end
+    val = datetime(trimmed_val, 'InputFormat', fmt_str, dtargs{:});
+  elseif has_date
+    fmt_str = date_fmt;
+    val = datetime(trimmed_val, 'InputFormat', fmt_str);
+  elseif has_time
+    fmt_str = time_fmt;
+    if has_fr_sec
+      fmt_str = [fmt_str, fract_sec_fmt];
+    end
+    val = datetime(trimmed_val, 'InputFormat', fmt_str);
+  end
+
 end
