@@ -32,7 +32,16 @@ function obj_out = parse(toml_str)
     % recognize key-value pairs and add them to the struct
     [key, value] = strtok(toml_nonempty{current_line}, '=');
     key_seq = cellfun(cleaner, strsplit(key, '.'), 'uniformoutput', false);
-    value_fix = parsevalue(value);
+    % ensure we have a complete value
+    while true
+      value_fix = parsevalue(value);
+      if isempty(value_fix) && current_line < length(toml_nonempty)
+        current_line = current_line + 1;
+        value = [value, '\n', toml_nonempty{current_line}];
+      else
+        break
+      end
+    end
     obj_out = setfield(obj_out, location_stack{:}, key_seq{:}, value_fix);
     current_line = current_line + 1;
   end

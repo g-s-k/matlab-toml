@@ -1,4 +1,11 @@
 function val = parsevalue(str)
+%% check for noncompletion
+  if isempty(str)
+    val = '';
+    return
+  end
+
+%% default fixes
   % default behavior is direct passthrough
   val = str;
 
@@ -45,8 +52,18 @@ function val = parsevalue(str)
 
 %% strings
   % basic strings
-  if trimmed_val(1) == '"' && trimmed_val(end) == '"'
-    val = trimmed_val(2:end-1);
+  if trimmed_val(1) == '"'
+    if trimmed_val(end) == '"'
+      val = trimmed_val(2:end-1);
+      val = strrep(val, '\"', '"');
+      ucode_match = '\\(u[A-Fa-f0-9]{4}|U[A-Fa-f0-9]{8})';
+      ucode_replace = '${char(hex2dec($1(2:end)))}';
+      val = regexprep(val, ucode_match, ucode_replace);
+    else
+      % newline in string, tell caller the value is incomplete
+      val = '';
+      return
+    end
   end
 
 end
