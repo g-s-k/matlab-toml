@@ -1,21 +1,6 @@
 function key = parsekey(str)
   % split on dots, if not inside quotes
-  indices = [];
-  depth_q = [0 0];
-  for ch = 1:length(str)
-    switch str(ch)
-      case ''''
-        depth_q(1) = depth_q(1) + 1;
-      case '"'
-        depth_q(2) = depth_q(2) + 1;
-      case '.'
-        if ~any(mod(depth_q, 2))
-          indices = [indices, ch];
-        end
-    end
-  end
-  str(indices) = char(0);
-  key_seq = strsplit(str, char(0));
+  key_seq = splitby(str, '.', {'''', '"'});
 
   % utility for the following
   uo = {'UniformOutput', false};

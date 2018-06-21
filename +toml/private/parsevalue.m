@@ -181,25 +181,7 @@ function val = parsevalue(str)
     end
 
     % split array while respecting nesting
-    array_depth = 0;
-    num_quotes = [0, 0];
-    for ch = 1:length(val)
-      switch val(ch)
-        case '['
-          array_depth = array_depth + 1;
-        case ']'
-          array_depth = array_depth - 1;
-        case ''''
-          num_quotes(1) = num_quotes(1) + 1;
-        case '"'
-          num_quotes(2) = num_quotes(2) + 1;
-        case ','
-          if array_depth == 0 && ~any(mod(num_quotes, 2))
-            val(ch) = char(0);
-          end
-      end
-    end
-    val = strsplit(val, char(0));
+    val = splitby(val, ',', {'{}', '[]', '"', ''''});
 
     val = cellfun(@strtrim, val, 'uniformoutput', false);
     val = val(~cellfun(@isempty, val));
@@ -228,25 +210,7 @@ function val = parsevalue(str)
     end
 
     % split table while respecting nesting
-    array_depth = 0;
-    num_quotes = [0, 0];
-    for ch = 1:length(val)
-      switch val(ch)
-        case '['
-          array_depth = array_depth + 1;
-        case ']'
-          array_depth = array_depth - 1;
-        case ''''
-          num_quotes(1) = num_quotes(1) + 1;
-        case '"'
-          num_quotes(2) = num_quotes(2) + 1;
-        case ','
-          if array_depth == 0 && ~any(mod(num_quotes, 2))
-            val(ch) = char(0);
-          end
-      end
-    end
-    val = strsplit(val, char(0));
+    val = splitby(val, ',', {'{}', '[]', '"', ''''});
 
     vals = cellfun(@(elem) strsplit(elem, '='), val, 'uniformoutput', false);
     key_names = cellfun(@(elem) parsekey(elem{1}), vals, 'uniformoutput', false);
