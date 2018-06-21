@@ -62,6 +62,21 @@ classdef TestToml < matlab.unittest.TestCase
         'Did not handle nested quoting in key correctly.')
     end
 
+    function testDottedKeys(testCase)
+      toml_str1 = 'abc.def.ghi = "value"';
+      toml_str2 = 'abc."def".ghi = "value"';
+      toml_str3 = 'abc."quoted ''value''".ghi = "value"';
+      testCase.verifyEqual(toml.parse(toml_str1), ...
+        struct('abc', struct('def', struct('ghi', 'value'))), ...
+        'Did not handle dotted key correctly.')
+      testCase.verifyEqual(toml.parse(toml_str2), ...
+        struct('abc', struct('def', struct('ghi', 'value'))), ...
+        'Did not handle dotted and quoted key correctly.')
+      testCase.verifyEqual(toml.parse(toml_str3), ...
+        struct('abc', struct('quoted_value', struct('ghi', 'value'))), ...
+        'Did not handle nested quoting in dotted key correctly.')
+    end
+
     function testBasicString(testCase)
       toml_str1 = 'key = "value"';
       toml_str2 = sprintf('key = "line 1\nline 2"');
