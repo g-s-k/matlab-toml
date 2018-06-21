@@ -209,4 +209,52 @@ function val = parsevalue(str)
     end
   end
 
+%% tables
+
+  if trimmed_val(1) == '{'
+    % is it all here yet?
+    if trimmed_val(end) ~= '}'
+      val = [];
+      return
+    % remove outer brackets
+    else
+      val = trimmed_val(2:end-1);
+    end
+
+    % empty table
+    if isempty(val)
+      val = struct();
+      return
+    end
+
+    % split table while respecting nesting
+    array_depth = 0;
+    num_quotes = [0, 0];
+    for ch = 1:length(val)
+      switch val(ch)
+        case '['
+          array_depth = array_depth + 1;
+        case ']'
+          array_depth = array_depth - 1;
+        case ''''
+          num_quotes(1) = num_quotes(1) + 1;
+        case '"'
+          num_quotes(2) = num_quotes(2) + 1;
+        case ','
+          if array_depth == 0 && ~any(mod(num_quotes, 2))
+            val(ch) = char(0);
+          end
+      end
+    end
+    val = strsplit(val, char(0));
+
+    vals = cellfun(@(elem) strsplit(elem, '='), val, 'uniformoutput', false);
+    key_names = cellfun(@(elem) parsekey(elem{1}), vals, 'uniformoutput', false);
+
+    val = struct();
+    for elem = 1:length(vals)
+      val = setfield(val, key_names{elem}{:}, parsevalue(vals{elem}{2}));
+    end
+  end
+
 end

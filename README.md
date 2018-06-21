@@ -5,5 +5,4 @@ An implementation of [TOML](https://github.com/toml-lang/toml) in MATLAB.
 * Error for invalid escaped characters
 * Error for re-defining a key
 * Tables
-  1. Inline
-  2. Arrayed
+  1. Arrayed
