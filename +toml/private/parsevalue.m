@@ -20,7 +20,8 @@ function val = parsevalue(str)
 %% check for numeric types
 
   % utils for integers
-  is_int = @(t, s, c) all(ismember(t, [s, '_'])) && isequal(t(1:2), ['0', c]);
+  is_int = @(t, s, c) all(ismember(t, [s, '_'])) && ...
+           length(t) > 3 && isequal(t(1:2), ['0', c]);
   descore = @(t) strrep(t(3:end), '_', '');
   specs.bin = 'b01';
   specs.oct = 'o01234567';
