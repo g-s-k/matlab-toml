@@ -212,7 +212,8 @@ function val = parsevalue(str)
     % split table while respecting nesting
     val = splitby(val, ',', {'{}', '[]', '"', ''''});
 
-    vals = cellfun(@(elem) strsplit(elem, '='), val, 'uniformoutput', false);
+    vals = cellfun(@(elem) splitby(elem, '=', {'{}', '[]', '"', ''''}), ...
+                   val, 'uniformoutput', false);
     key_names = cellfun(@(elem) parsekey(elem{1}), vals, 'uniformoutput', false);
 
     val = struct();
