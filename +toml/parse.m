@@ -31,7 +31,7 @@ function obj_out = parse(toml_str)
 
     % recognize key-value pairs and add them to the struct
     [key, value] = strtok(toml_nonempty{current_line}, '=');
-    key_seq = cellfun(cleaner, strsplit(key, '.'), 'uniformoutput', false);
+    key_seq = parsekey(key);
     % ensure we have a complete value
     while true
       value_fix = parsevalue(value);

@@ -2,7 +2,6 @@
 An implementation of [TOML](https://github.com/toml-lang/toml) in MATLAB.
 
 ## Todo
-* Quoted keys
 * Tests for dotted keys
 * Error for invalid escaped characters
 * Error for re-defining a key
