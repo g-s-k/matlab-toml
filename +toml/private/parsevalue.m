@@ -53,17 +53,37 @@ function val = parsevalue(str)
 %% strings
   % basic strings
   if trimmed_val(1) == '"'
-    if trimmed_val(end) == '"'
+    % is it multiline and complete?
+    if isequal(trimmed_val(1:3), '"""') && ...
+       numel(trimmed_val) > 3 && ...
+       isequal(trimmed_val(end-2:end), '"""')
+      % remove quotes
+      val = trimmed_val(4:end-3);
+      % remove leading newline
+      if val(1) == sprintf('\n')
+        val = val(2:end);
+      end
+      % trim whitespace for backslashes
+      val = regexprep(val, '\\\n\s+', '');
+
+    % is it complete but not multiline?
+    elseif trimmed_val(2) ~= '"' && trimmed_val(end) == '"'
+      % remove quotes
       val = trimmed_val(2:end-1);
-      val = strrep(val, '\"', '"');
-      ucode_match = '\\(u[A-Fa-f0-9]{4}|U[A-Fa-f0-9]{8})';
-      ucode_replace = '${char(hex2dec($1(2:end)))}';
-      val = regexprep(val, ucode_match, ucode_replace);
+
+    % newline in string, tell caller the value is incomplete
     else
-      % newline in string, tell caller the value is incomplete
       val = '';
       return
     end
+
+    % common post-processing
+    % escaped quotes
+    val = strrep(val, '\"', '"');
+    % unicode points
+    ucode_match = '\\(u[A-Fa-f0-9]{4}|U[A-Fa-f0-9]{8})';
+    ucode_replace = '${char(hex2dec($1(2:end)))}';
+    val = regexprep(val, ucode_match, ucode_replace);
   end
 
 end

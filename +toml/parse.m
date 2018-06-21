@@ -1,7 +1,7 @@
 function obj_out = parse(toml_str)
 %% pre-emptive checking
   % split on newlines
-  toml_lines = strsplit(toml_str, {'\\n', '\\r'});
+  toml_lines = strsplit(toml_str, {'\n', '\r'});
   % throw out comments
   de_commenter = @(elem) deblank(decomment(elem));
   toml_decommented = cellfun(de_commenter, toml_lines, ...
@@ -37,7 +37,7 @@ function obj_out = parse(toml_str)
       value_fix = parsevalue(value);
       if isempty(value_fix) && current_line < length(toml_nonempty)
         current_line = current_line + 1;
-        value = [value, '\n', toml_nonempty{current_line}];
+        value = sprintf('%s\n%s', value, toml_nonempty{current_line});
       else
         break
       end

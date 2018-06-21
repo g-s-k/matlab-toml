@@ -3,7 +3,7 @@ classdef TestToml < matlab.unittest.TestCase
   methods (Test)
 
     function testComment(testCase)
-      toml_str = '\n# this is a comment\n';
+      toml_str = sprintf('\n# this is a comment\n');
       testCase.assertEmpty(fieldnames(toml.parse(toml_str)), ...
         'Improper interpretation of a comment')
     end
@@ -15,7 +15,7 @@ classdef TestToml < matlab.unittest.TestCase
     end
 
     function testEmptyBareKey(testCase)
-      toml_str = '\nkey = "value"\n= "value2"';
+      toml_str = sprintf('\nkey = "value"\n= "value2"');
       testCase.assertError(@() toml.parse(toml_str), ...
         'toml:EmptyBareKey', 'Did not fail for unspecified value')
     end
@@ -45,7 +45,7 @@ classdef TestToml < matlab.unittest.TestCase
 
     function testBasicString(testCase)
       toml_str1 = 'key = "value"';
-      toml_str2 = 'key = "line 1\nline 2"';
+      toml_str2 = sprintf('key = "line 1\nline 2"');
       toml_str3 = 'key = "disappearing A\b"';
       toml_str4 = 'key = "escaped \"quote\" marks"';
       toml_str5 = 'key = "inline \u0075nicode"';
@@ -54,7 +54,7 @@ classdef TestToml < matlab.unittest.TestCase
         struct('key', 'value'), ...
         'Did not parse a basic string successfully.')
       testCase.verifyEqual(toml.parse(toml_str2), ...
-        struct('key', 'line 1\nline 2'), ...
+        struct('key', sprintf('line 1\nline 2')), ...
         'Did not parse a basic string with a newline successfully.')
       testCase.verifyEqual(toml.parse(toml_str3), ...
         struct('key', 'disappearing A\b'), ...
@@ -68,6 +68,21 @@ classdef TestToml < matlab.unittest.TestCase
       testCase.verifyEqual(toml.parse(toml_str6), ...
         struct('key', 'inline Unicode'), ...
         'Did not parse a basic string with long Unicode successfully.')
+    end
+
+    function testMultilineBasicString(testCase)
+      toml_str1 = sprintf('key = """\nabcd"""');
+      toml_str2 = sprintf('key = """line 1\n    line 2"""');
+      toml_str3 = sprintf('key = """on the \\\n    same line"""');
+      testCase.verifyEqual(toml.parse(toml_str1), ...
+        struct('key', 'abcd'), ...
+        'Did not parse a multiline basic string successfully.')
+      testCase.verifyEqual(toml.parse(toml_str2), ...
+        struct('key', sprintf('line 1\n    line 2')), ...
+        'Did not parse a multiline basic string with indentation successfully.')
+      testCase.verifyEqual(toml.parse(toml_str3), ...
+        struct('key', sprintf('on the same line')), ...
+        'Did not parse a multiline basic string with a LEB successfully.')
     end
 
   end
