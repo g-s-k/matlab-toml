@@ -238,6 +238,24 @@ classdef TestToml < matlab.unittest.TestCase
       end
     end
 
+    function testArrays(testCase)
+      % TOML version
+      toml_str = { ...
+          'key = [1, 2, 3]' ...
+        , 'key = ["a", "b", "c"]' ...
+                 };
+
+      % matlab versions, respectively
+      matl_obj(1).key = [1, 2, 3];
+      matl_obj(2).key = {'a', 'b', 'c'};
+
+      % check each one in turn
+      for indx = 1:length(toml_str)
+        testCase.verifyEqual(toml.parse(toml_str{indx}), matl_obj(indx), ...
+        'Did not parse an array successfully.')
+      end
+    end
+
   end
 
 end

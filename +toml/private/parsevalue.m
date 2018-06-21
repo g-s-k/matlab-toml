@@ -168,4 +168,24 @@ function val = parsevalue(str)
     val = datetime(trimmed_val, 'InputFormat', fmt_str);
   end
 
+%% arrays
+
+  if trimmed_val(1) == '['
+    % is it all here yet?
+    if trimmed_val(end) ~= ']'
+      val = [];
+      return
+    % remove outer brackets
+    else
+      val = trimmed_val(2:end-1);
+    end
+
+    val = strsplit(val, ',');
+    val = cellfun(@strtrim, val, 'uniformoutput', false);
+    val = cellfun(@parsevalue, val, 'uniformoutput', false);
+    if all(cellfun(@isnumeric, val))
+      val = cell2mat(val);
+    end
+  end
+
 end
