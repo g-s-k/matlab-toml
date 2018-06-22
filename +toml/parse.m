@@ -18,12 +18,11 @@ function obj_out = parse(toml_str)
 
   while current_line <= length(toml_nonempty)
     % recognize a section and store it semantically
-    section_regexp = '^\[(\w+?\.?)+\]$';
-    section_name = regexp(toml_nonempty{current_line}, section_regexp, ...
-                          'tokens');
-    if ~isempty(section_name)
-      location_stack = cellfun(@parsekey, section_name{:}, ...
-                               'uniformoutput', false);
+    n_brackets = is_section(toml_nonempty{current_line});
+    if n_brackets
+      section_name = toml_nonempty{current_line}(n_brackets+1:end-n_brackets);
+      location_stack = parsekey(section_name);
+      obj_out = setfield(obj_out, location_stack{:}, struct());
       current_line = current_line + 1;
       continue
     end
