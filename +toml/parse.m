@@ -22,11 +22,12 @@ function obj_out = parse(toml_str)
     if n_brackets
       section_name = toml_nonempty{current_line}(n_brackets+1:end-n_brackets);
       location_stack = parsekey(section_name);
+      location_stack = adjust_key_stack(obj_out, location_stack);
       if n_brackets == 1
-        obj_out = setfield(obj_out, location_stack{:}, struct());
+        obj_out = set_nested_field(obj_out, location_stack, struct());
       else
         try
-          existing_val = getfield(obj_out, location_stack{:});
+          existing_val = get_nested_field(obj_out, location_stack);
           location_stack{end + 1} = length(existing_val) + 1;
           obj_out = set_nested_field(obj_out, location_stack, struct());
         catch
