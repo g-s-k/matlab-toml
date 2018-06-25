@@ -22,7 +22,18 @@ function obj_out = parse(toml_str)
     if n_brackets
       section_name = toml_nonempty{current_line}(n_brackets+1:end-n_brackets);
       location_stack = parsekey(section_name);
-      obj_out = setfield(obj_out, location_stack{:}, struct());
+      if n_brackets == 1
+        obj_out = setfield(obj_out, location_stack{:}, struct());
+      else
+        try
+          existing_val = getfield(obj_out, location_stack{:});
+          location_stack{end + 1} = length(existing_val) + 1;
+          obj_out = set_nested_field(obj_out, location_stack, struct());
+        catch
+          obj_out = set_nested_field(obj_out, location_stack, {struct()});
+          location_stack{end + 1} = 1;
+        end
+      end
       current_line = current_line + 1;
       continue
     end
@@ -40,7 +51,7 @@ function obj_out = parse(toml_str)
         break
       end
     end
-    obj_out = setfield(obj_out, location_stack{:}, key_seq{:}, value_fix);
+    obj_out = set_nested_field(obj_out, [location_stack, key_seq], value_fix);
     current_line = current_line + 1;
   end
 end
