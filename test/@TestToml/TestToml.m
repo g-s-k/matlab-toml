@@ -4,19 +4,19 @@ classdef TestToml < matlab.unittest.TestCase
 
     function testComment(testCase)
       toml_str = sprintf('\n# this is a comment\n');
-      testCase.assertEmpty(fieldnames(toml.parse(toml_str)), ...
+      testCase.verifyEmpty(fieldnames(toml.parse(toml_str)), ...
         'Improper interpretation of a comment')
     end
 
     function testKeyValueForm(testCase)
       toml_str = 'key = #';
-      testCase.assertError(@() toml.parse(toml_str), ...
+      testCase.verifyError(@() toml.parse(toml_str), ...
         'toml:UnspecifiedValue', 'Did not fail for unspecified value')
     end
 
     function testEmptyBareKey(testCase)
       toml_str = sprintf('\nkey = "value"\n= "value2"');
-      testCase.assertError(@() toml.parse(toml_str), ...
+      testCase.verifyError(@() toml.parse(toml_str), ...
         'toml:EmptyBareKey', 'Did not fail for unspecified value')
     end
 
