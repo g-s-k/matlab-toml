@@ -62,6 +62,9 @@ function val = parsevalue(str)
   % special values of float
   if any(strcmp(trimmed_val, {'inf', '+inf', '-inf', 'nan', '+nan', '-nan'}))
     val = str2double(val);
+  elseif any(strcmpi(trimmed_val, {'inf', '+inf', '-inf', 'nan', '+nan', '-nan'}))
+    error('toml:UppercaseSpecialFloat', ...
+          'Special floating-point values must be lowercase.')
   end
 
 %% booleans
