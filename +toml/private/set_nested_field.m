@@ -1,3 +1,11 @@
+% SET_NESTED_FIELD set a value somewhere in a struct
+%
+%   SET_NESTED_FIELD(obj, indx, val) sets the location denoted by `indx`
+%   (a pointer sequence into `obj`) in `obj` equal to `val`, and returns
+%   a modified copy of `obj`.
+%
+%   See also GET_NESTED_FIELD
+
 function obj = set_nested_field(obj, indx, val)
   if length(indx) == 1
     if isstruct(obj)
@@ -11,11 +19,7 @@ function obj = set_nested_field(obj, indx, val)
     end
   else
     try
-      if isstruct(obj)
-        orig = obj.(indx{1});
-      else
-        orig = obj{indx{1}};
-      end
+      orig = get_nested_field(obj, indx(1));
     catch
       if ischar(indx{2})
         orig = struct();

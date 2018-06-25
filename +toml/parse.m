@@ -1,3 +1,9 @@
+% PARSE convert TOML to native MATLAB datatypes
+%
+%   PARSE(toml_str) returns the MATLAB representation of the
+%   TOML-formatted data in `toml_str`. If it is invalid TOML, an
+%   appropriate exception will be raised.
+
 function obj_out = parse(toml_str)
 %% pre-emptive checking
   % split on newlines
@@ -23,13 +29,16 @@ function obj_out = parse(toml_str)
       section_name = toml_nonempty{current_line}(n_brackets+1:end-n_brackets);
       location_stack = parsekey(section_name);
       location_stack = adjust_key_stack(obj_out, location_stack);
+      % is it a table or an array of tables?
       if n_brackets == 1
         obj_out = set_nested_field(obj_out, location_stack, struct());
       else
+        % if it already exists, append
         try
           existing_val = get_nested_field(obj_out, location_stack);
           location_stack{end + 1} = length(existing_val) + 1;
           obj_out = set_nested_field(obj_out, location_stack, struct());
+        % if not, pre-populate
         catch
           obj_out = set_nested_field(obj_out, location_stack, {struct()});
           location_stack{end + 1} = 1;

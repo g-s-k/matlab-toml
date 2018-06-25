@@ -1,3 +1,21 @@
+% PARSEVALUE parse the corresponding MATLAB object out of a TOML value
+%
+%   PARSEVALUE('') returns an empty string.
+%   PARSEVALUE('0b10') returns 2.
+%   PARSEVALUE('0o10') returns 8.
+%   PARSEVALUE('0x10') returns 16.
+%   PARSEVALUE('10') returns 10.
+%   PARSEVALUE('"foo"') returns 'foo'.
+%   PARSEVALUE('true') returns logical 1.
+%   PARSEVALUE('"\n"') returns a newline character.
+%   PARSEVALUE('20180625T07:00Z') returns a datetime object with the
+%   value June 25, 2018, 7:00AM UTC.
+%   PARSEVALUE('["a", "b"]') returns {'a', 'b'}.
+%   PARSEVALUE('[1, 2, 3]') returns [1, 2, 3].
+%   PARSEVALUE('{key = "value"}') returns struct('key', 'value').
+%
+%   See also PARSEKEY
+
 function val = parsevalue(str)
 %% check for noncompletion
   if isempty(str)

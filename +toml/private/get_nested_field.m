@@ -1,3 +1,12 @@
+% GET_NESTED_FIELD get a value from inside a struct
+%
+%   GET_NESTED_FIELD(obj, indx) follows the pointer `indx` into the
+%   struct or cell `obj`, and retrieves the value at the pointed
+%   location, if it exists. If any member of the pointer chain does not
+%   exist, it raises the error 'toml:NoSuchIndex'.
+%
+%   See also SET_NESTED_FIELD
+
 function value = get_nested_field(obj, indx)
   % check for existence
   switch class(obj)

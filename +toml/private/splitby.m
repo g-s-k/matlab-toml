@@ -1,3 +1,8 @@
+% SPLITBY split a string while respecting grouping
+%
+%   SPLITBY(str, '.', {'"', '[]'}) splits `str` on each period which is
+%   not enclosed in square brackets or double quotes.
+
 function parsed = splitby(str, to_split_by, to_respect)
   % make convenient structure out of delimiter arguments
   delims = cellfun(@delim_data, to_respect);

@@ -1,3 +1,11 @@
+% PARSEKEY convert a string into a struct pointer
+%
+%   PARSEKEY(str) splits a string semantically on dots (while respecting
+%   quotes), then converts each segment of the resulting pointer into a
+%   valid field name with a predictable structure.
+%
+%   See also PARSEVALUE, SPLITBY
+
 function key = parsekey(str)
   % split on dots, if not inside quotes
   key_seq = splitby(str, '.', {'''', '"'});
