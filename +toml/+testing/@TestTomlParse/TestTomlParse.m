@@ -482,6 +482,19 @@ classdef TestTomlParse < matlab.unittest.TestCase
        'Did not reject a redefined key.')
     end
 
+    function testRedefinedTables(testCase)
+      toml_str = { ...
+          sprintf('[a]\nb = 1\n\n[a]\nc = 2') ...
+        , sprintf('[a]\nb = 1\n\n[a.b]\nc = 2') ...
+                 };
+
+      for str = toml_str
+        testCase.verifyError(@() toml.parse(str{:}), ...
+        'toml:RedefinedTable', ...
+        'Did not reject a redefined table.')
+      end
+    end
+
   end
 
 end
