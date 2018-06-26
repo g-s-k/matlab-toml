@@ -57,6 +57,11 @@ function val = parsevalue(str)
   % decimal (including floats)
   elseif all(ismember(trimmed_val, specs.dec))
     val = str2double(strrep(val, '_', ''));
+    % error for using leading zeros on a decimal integer
+    if isfinite(val) && ~mod(val, 1) && trimmed_val(1) == '0'
+      error('toml:DecIntLeadingZeros', ...
+            'Decimal integers may not have leading zeros.')
+    end
   end
 
   % special values of float
