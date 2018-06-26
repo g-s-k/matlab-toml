@@ -240,6 +240,11 @@ function val = parsevalue(str)
       val = trimmed_val(2:end-1);
     end
 
+    if isempty(val)
+      val = {};
+      return
+    end
+
     % split array while respecting nesting
     val = splitby(val, ',', {'{}', '[]', '"', ''''});
 

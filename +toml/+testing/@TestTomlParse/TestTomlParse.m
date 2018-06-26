@@ -495,6 +495,18 @@ classdef TestTomlParse < matlab.unittest.TestCase
       end
     end
 
+    function testRedefinedArrays(testCase)
+      toml_str = { ...
+          sprintf('fruit = []\n[[fruit]]') ...
+                 };
+
+      for str = toml_str
+        testCase.verifyError(@() toml.parse(str{:}), ...
+        'toml:RedefinedArray', ...
+        'Did not reject a redefined array.')
+      end
+    end
+
   end
 
 end

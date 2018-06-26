@@ -68,7 +68,7 @@ function obj_out = parse(toml_str)
     % ensure we have a complete value
     while true
       value_fix = parsevalue(value);
-      if isempty(value_fix) && current_line < length(toml_nonempty)
+      if isempty(value_fix) && ~iscell(value_fix) && current_line < length(toml_nonempty)
         current_line = current_line + 1;
         value = sprintf('%s\n%s', value, toml_nonempty{current_line});
       else
