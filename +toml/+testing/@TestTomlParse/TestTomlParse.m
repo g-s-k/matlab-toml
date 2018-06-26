@@ -350,6 +350,12 @@ classdef TestTomlParse < matlab.unittest.TestCase
       runStructuredTest(testCase, toml_str, matlab_strct, error_msg)
     end
 
+    function testHeterogeneousArrays(testCase)
+      testCase.assertError(@() toml.parse('key = [1, "abc"]'), ...
+        'toml:HeterogeneousArray', ...
+        'Did not reject a heterogeneous array.')
+    end
+
     function testInlineTables(testCase)
       % TOML version
       toml_str = { ...

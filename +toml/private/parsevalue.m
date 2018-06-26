@@ -215,7 +215,15 @@ function val = parsevalue(str)
     val = cellfun(@strtrim, val, 'uniformoutput', false);
     val = val(~cellfun(@isempty, val));
     val = cellfun(@parsevalue, val, 'uniformoutput', false);
-    if all(cellfun(@isnumeric, val))
+    % check homogeneity
+    contained_types = cellfun(@class, val, 'uniformoutput', false);
+    contained_sizes = cellfun(@numel, val);
+    contained_types(strcmp(contained_types, 'double') & contained_sizes > 1) ...
+        = deal({'cell'});
+    if numel(unique(contained_types)) > 1
+      error('toml:HeterogeneousArray', ...
+            'All elements of a TOML array must be the same type.')
+    elseif all(cellfun(@isnumeric, val))
       val = cell2mat(val);
     end
   end
