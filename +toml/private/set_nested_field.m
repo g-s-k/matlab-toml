@@ -9,8 +9,13 @@
 function obj = set_nested_field(obj, indx, val)
   if length(indx) == 1
     if isstruct(obj)
+      if isfield(obj, indx{:}) && ...
+            ~(iscell(obj.(indx{:})) || isstruct(obj.(indx{:})))
+        error('toml:RedefinedKey', ...
+              'Keys cannot be redefined.')
+      end
       obj.(indx{1}) = val;
-    else
+    elseif iscell(obj)
       if ischar(indx{1})
         obj{end}.(indx{1}) = val;
       else
