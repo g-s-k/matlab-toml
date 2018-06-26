@@ -70,6 +70,9 @@ function val = parsevalue(str)
 %% booleans
   if any(strcmp(trimmed_val, {'true', 'false'}))
     val = str2num(trimmed_val);
+  elseif any(strcmpi(trimmed_val, {'true', 'false'}))
+    error('toml:UppercaseBoolean', ...
+          'Boolean values must be lowercase.')
   end
 
 %% strings
