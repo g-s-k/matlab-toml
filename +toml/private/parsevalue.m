@@ -100,8 +100,16 @@ function val = parsevalue(str)
   descore = @(t) strrep(t(3:end), '_', '');
   specs.bin = 'b01';
   specs.oct = 'o01234567';
-  specs.dec = '_+-0123456789.eE';
   specs.hex = 'x0123456789abcdefABCDEF';
+
+  dec_num = '([0-9][_0-9]*)?[0-9]';
+  dec_int = ['[+-]?', dec_num];
+  specs.dec = [ ...
+      '^', dec_int ...            % integer part
+      '(\.', dec_num, ')?' ...    % fractional part
+      '([eE]', dec_int, ')?$' ... % exponential part
+              ];
+
   % binary
   if is_int(trimmed_val, specs.bin, 'b')
     val = bin2dec(descore(trimmed_val));
@@ -115,7 +123,7 @@ function val = parsevalue(str)
     val = hex2dec(descore(trimmed_val));
     return
   % decimal (including floats)
-  elseif all(ismember(trimmed_val, specs.dec))
+  elseif ~isempty(regexp(trimmed_val, specs.dec))
     val = str2double(strrep(val, '_', ''));
     % error for using leading zeros on a decimal integer
     if isfinite(val) && ~mod(val, 1) && trimmed_val(1) == '0'
@@ -126,10 +134,15 @@ function val = parsevalue(str)
   end
 
   % special values of float
-  if any(strcmp(trimmed_val, {'inf', '+inf', '-inf', 'nan', '+nan', '-nan'}))
+  spec_flt = {'inf'; 'nan'};
+  op_chars = {'', '+', '-'};
+  spec_cmp = reshape( ...
+      strcat(repmat(op_chars, 2, 1), repmat(spec_flt, 1, 3)), ...
+                     [], 1);
+  if any(strcmp(trimmed_val, spec_cmp))
     val = str2double(val);
     return
-  elseif any(strcmpi(trimmed_val, {'inf', '+inf', '-inf', 'nan', '+nan', '-nan'}))
+  elseif any(strcmpi(trimmed_val, spec_cmp))
     error('toml:UppercaseSpecialFloat', ...
           'Special floating-point values must be lowercase.')
   end
