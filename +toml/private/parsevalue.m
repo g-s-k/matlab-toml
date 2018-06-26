@@ -126,7 +126,7 @@ function val = parsevalue(str)
   elseif ~isempty(regexp(trimmed_val, specs.dec))
     val = str2double(strrep(val, '_', ''));
     % error for using leading zeros on a decimal integer
-    if isfinite(val) && ~mod(val, 1) && trimmed_val(1) == '0'
+    if isfinite(val) && ~mod(val, 1) && val && trimmed_val(1) == '0'
       error('toml:DecIntLeadingZeros', ...
             'Decimal integers may not have leading zeros.')
     end
@@ -160,7 +160,8 @@ function val = parsevalue(str)
   % basic strings
   if trimmed_val(1) == '"'
     % is it multiline and complete?
-    if isequal(trimmed_val(1:3), '"""') && ...
+    if numel(trimmed_val) > 2 && ...
+       isequal(trimmed_val(1:3), '"""') && ...
        numel(trimmed_val) > 3 && ...
        isequal(trimmed_val(end-2:end), '"""')
       % remove quotes
