@@ -1,12 +1,12 @@
-% PARSE convert TOML to native MATLAB datatypes
+% DECODE convert TOML to native MATLAB datatypes
 %
-%   PARSE(toml_str) returns the MATLAB representation of the
+%   DECODE(toml_str) returns the MATLAB representation of the
 %   TOML-formatted data in `toml_str`. If it is invalid TOML, an
 %   appropriate exception will be raised.
 %
 %   See also TOML.LOAD
 
-function obj_out = parse(toml_str)
+function obj_out = decode(toml_str)
 %% pre-emptive checking
   % split on newlines
   toml_lines = strsplit(toml_str, {'\n', '\r'});

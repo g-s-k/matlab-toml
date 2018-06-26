@@ -3,9 +3,9 @@
 %   LOAD('file.toml') loads the contents of `file.toml` and parses
 %   that data into a MATLAB struct.
 %
-%   See also FILEREAD, TOML.PARSE
+%   See also FILEREAD, TOML.DECODE
 
 function toml_data = load(filename)
   raw_text = fileread(filename);
-  toml_data = toml.parse(raw_text);
+  toml_data = toml.decode(raw_text);
 end
