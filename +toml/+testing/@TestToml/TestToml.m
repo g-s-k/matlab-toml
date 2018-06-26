@@ -344,13 +344,12 @@ classdef TestToml < matlab.unittest.TestCase
                  };
 
       % in structs for even easier reference
-      matl_strct = cellfun(@(a) struct('tbl', a), matl_obj);
+      matlab_strct = cellfun(@(a) struct('tbl', a), matl_obj, ...
+                             'uniformoutput', false);
 
-      % check each one in turn
-      for indx = 1:length(toml_str)
-        testCase.verifyEqual(toml.parse(toml_str{indx}), matl_strct(indx), ...
-        'Did not parse an inline table successfully.')
-      end
+      error_msg = 'Did not parse an inline table successfully.';
+
+      runStructuredTest(testCase, toml_str, matlab_strct, error_msg)
     end
 
     function testFullTables(testCase)
