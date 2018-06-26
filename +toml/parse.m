@@ -33,19 +33,7 @@ function obj_out = parse(toml_str)
       location_stack = adjust_key_stack(obj_out, location_stack);
       % is it a table or an array of tables?
       if n_brackets == 1
-        is_there = false;
-        try
-          get_nested_field(obj_out, location_stack);
-          is_there = true;
-        catch
-        end
-
-        if is_there
-          error('toml:RedefinedTable', ...
-                'Tables cannot be redefined.')
-        else
-          obj_out = set_nested_field(obj_out, location_stack, struct());
-        end
+        obj_out = set_nested_field(obj_out, location_stack, struct());
       else
         % if it already exists, append
         try

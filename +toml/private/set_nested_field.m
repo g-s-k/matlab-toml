@@ -12,6 +12,10 @@ function obj = set_nested_field(obj, indx, val)
       if isfield(obj, indx{:})
         switch class(obj.(indx{:}))
           case 'struct'
+            if ~isstruct(val) || isempty(fieldnames(val))
+              error('toml:RedefinedTable', ...
+                    'Tables cannot be redefined.')
+            end
           case 'cell'
             if iscell(val) && ...
               ( ...
@@ -28,8 +32,15 @@ function obj = set_nested_field(obj, indx, val)
               )
               error('toml:RedefinedArray', ...
                     'Arrays cannot be redefined.')
+            elseif isstruct(val)
+              error('toml:NameCollision', ...
+                    'Table definitions cannot override existing arrays.')
             end
           otherwise
+            if isstruct(val)
+              error('toml:RedefinedTable', ...
+                    'Tables cannot be redefined.')
+            end
             error('toml:RedefinedKey', ...
                   'Keys cannot be redefined.')
         end
