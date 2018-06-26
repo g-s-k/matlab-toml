@@ -366,7 +366,7 @@ classdef TestToml < matlab.unittest.TestCase
                  };
 
       % matlab versions, respectively
-      matl_obj = { ...
+      matlab_strct = { ...
           struct('table_1', struct('key1', 'some string', 'key2', 123)) ...
         , struct('table_1', struct('table_2', struct('key1', 'some string', ...
                                                      'key2', 123))) ...
@@ -378,11 +378,9 @@ classdef TestToml < matlab.unittest.TestCase
         , struct('a', struct('b', struct('c', struct()))) ...
                  };
 
-      % check each one in turn
-      for indx = 1:length(toml_str)
-        testCase.verifyEqual(toml.parse(toml_str{indx}), matl_obj{indx}, ...
-        'Did not parse a table successfully.')
-      end
+      error_msg = 'Did not parse a table successfully.';
+
+      runStructuredTest(testCase, toml_str, matlab_strct, error_msg)
     end
 
     function testArrayedTables(testCase)
@@ -399,7 +397,7 @@ classdef TestToml < matlab.unittest.TestCase
                  };
 
       % matlab versions, respectively
-      matl_obj = { ...
+      matlab_strct = { ...
           struct('products', {{struct('name', 'Hammer', 'sku', 738594937), ...
                           struct(), struct('name', 'Nail', 'sku', ...
                                            28475893, 'color', 'gray')}}) ...
@@ -416,11 +414,9 @@ classdef TestToml < matlab.unittest.TestCase
                    }})
                  };
 
-      % check each one in turn
-      for indx = 1:length(toml_str)
-        testCase.verifyEqual(toml.parse(toml_str{indx}), matl_obj{indx}, ...
-        'Did not parse an array of tables successfully.')
-      end
+      error_msg = 'Did not parse an array of tables successfully.';
+
+      runStructuredTest(testCase, toml_str, matlab_strct, error_msg)
     end
 
   end
