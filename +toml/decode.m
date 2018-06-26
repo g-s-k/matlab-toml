@@ -4,7 +4,7 @@
 %   TOML-formatted data in `toml_str`. If it is invalid TOML, an
 %   appropriate exception will be raised.
 %
-%   See also TOML.LOAD
+%   See also TOML.READ
 
 function obj_out = decode(toml_str)
 %% pre-emptive checking
