@@ -28,7 +28,8 @@ function obj_out = decode(toml_str)
     % recognize a section and store it semantically
     n_brackets = is_section(toml_nonempty{current_line});
     if n_brackets
-      section_name = toml_nonempty{current_line}(n_brackets+1:end-n_brackets);
+      section_name = strtrim(toml_nonempty{current_line});
+      section_name = section_name(n_brackets+1:end-n_brackets);
       location_stack = parsekey(section_name);
       location_stack = adjust_key_stack(obj_out, location_stack);
       % is it a table or an array of tables?

@@ -1,5 +1,5 @@
 function n_brackets = is_section(str)
-  section_regexp = '^\[{1,2}(.+?\.?)+\]{1,2}$';
+  section_regexp = '^\s*\[{1,2}(.+?\.?)+\]{1,2}$';
   section_name = regexp(str, section_regexp);
   yn = ~isempty(section_name);
 
