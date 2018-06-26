@@ -108,6 +108,12 @@ function val = parsevalue(str)
     end
 
     % common post-processing
+    % catch invalid escapes
+    invalid_esc = regexp(val, '\\[^btnfr"\\uU]', 'match');
+    if ~isempty(invalid_esc)
+      error('toml:InvalidEscapeSequence', ...
+            ['Invalid escape sequence: \', invalid_esc{:}])
+    end
     % escaped quotes
     val = strrep(val, '\"', '"');
     % escaped characters

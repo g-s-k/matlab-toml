@@ -5,9 +5,6 @@
 %   DECOMMENT('key = "value" # comment') returns 'key = "value"'.
 
 function out = decomment(in)
-  if isempty(in) || in(1) == '#'
-    out = '';
-  else
-    out = strtok(in, '#');
-  end
+  all_parts = splitby(in, '#', {'"', ''''});
+  out = all_parts{1};
 end

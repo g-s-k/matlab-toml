@@ -202,6 +202,19 @@ classdef TestTomlParse < matlab.unittest.TestCase
       runStructuredTest(testCase, toml_str, matlab_strct, error_msg)
     end
 
+    function testReservedEscapes(testCase)
+      valid_esc = 'btnfr"\uU';
+      all_glyphs = char(33:126);
+      invalid_esc = setdiff(all_glyphs, valid_esc);
+
+      for ch = invalid_esc
+        str_to_parse = sprintf('key = "\\%s"', ch);
+        testCase.verifyError(@() toml.parse(str_to_parse), ...
+         'toml:InvalidEscapeSequence', ...
+         ['Did not reject a reserved escape sequence: "\', ch, '"'])
+      end
+    end
+
     function testMultilineBasicString(testCase)
       toml_str1 = sprintf('key = """\nabcd"""');
       toml_str2 = sprintf('key = """line 1\n    line 2"""');
