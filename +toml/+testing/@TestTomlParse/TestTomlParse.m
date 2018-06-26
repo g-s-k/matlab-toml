@@ -507,6 +507,20 @@ classdef TestTomlParse < matlab.unittest.TestCase
       end
     end
 
+    function testNameCollision(testCase)
+      toml_str = { ...
+          sprintf(['[[fruit]]\nname = "apple"\n\n' ...
+                   '[[fruit.variety]]\nname = "red delicious"\n\n' ...
+                   '[fruit.variety]\nname = "granny smith"']) ...
+                 };
+
+      for str = toml_str
+        testCase.verifyError(@() toml.parse(str{:}), ...
+        'toml:NameCollision', ...
+        'Did not reject a name collision between an array and a table.')
+      end
+    end
+
   end
 
 end
