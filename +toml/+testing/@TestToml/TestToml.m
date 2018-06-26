@@ -4,6 +4,10 @@ classdef TestToml < matlab.unittest.TestCase
 
     % Simple way to run tests repeatedly
     function runStructuredTest(testCase, toml_str, matlab_strct, error_msg)
+      if ischar(error_msg)
+        error_msg = repmat({error_msg}, size(toml_str));
+      end
+
       for indx = 1:length(toml_str)
         testCase.verifyEqual(toml.parse(toml_str{indx}), ...
                              matlab_strct{indx}, error_msg{indx})
@@ -160,7 +164,7 @@ classdef TestToml < matlab.unittest.TestCase
                      };
 
       error_msg = { ...
-          'Did not parse a basic string successfully.'
+          'Did not parse a basic string successfully.' ...
         , 'Did not parse a basic string with a newline successfully.' ...
         , 'Did not parse a basic string with a backspace successfully.' ...
         , 'Did not parse a basic string with escaped quotes successfully.' ...
@@ -218,13 +222,12 @@ classdef TestToml < matlab.unittest.TestCase
                  };
 
       % in structs for even easier reference
-      matl_strct = cellfun(@(a) struct('odt', a), matl_obj);
+      matlab_strct = cellfun(@(a) struct('odt', a), matl_obj, ...
+                             'uniformoutput', false);
 
-      % check each one in turn
-      for indx = 1:length(toml_str)
-        testCase.verifyEqual(toml.parse(toml_str{indx}), matl_strct(indx), ...
-        'Did not parse a fully qualified datetime successfully.')
-      end
+      error_msg = 'Did not parse a fully qualified datetime successfully.';
+
+      runStructuredTest(testCase, toml_str, matlab_strct, error_msg)
     end
 
     function testLocalDateTime(testCase)
@@ -244,13 +247,12 @@ classdef TestToml < matlab.unittest.TestCase
                  };
 
       % in structs for even easier reference
-      matl_strct = cellfun(@(a) struct('odt', a), matl_obj);
+      matlab_strct = cellfun(@(a) struct('odt', a), matl_obj, ...
+                             'uniformoutput', false);
 
-      % check each one in turn
-      for indx = 1:length(toml_str)
-        testCase.verifyEqual(toml.parse(toml_str{indx}), matl_strct(indx), ...
-        'Did not parse a fully qualified datetime successfully.')
-      end
+      error_msg = 'Did not parse a local datetime successfully.';
+
+      runStructuredTest(testCase, toml_str, matlab_strct, error_msg)
     end
 
     function testLocalDate(testCase)
@@ -265,13 +267,12 @@ classdef TestToml < matlab.unittest.TestCase
                  };
 
       % in structs for even easier reference
-      matl_strct = cellfun(@(a) struct('odt', a), matl_obj);
+      matlab_strct = cellfun(@(a) struct('odt', a), matl_obj, ...
+                             'uniformoutput', false);
 
-      % check each one in turn
-      for indx = 1:length(toml_str)
-        testCase.verifyEqual(toml.parse(toml_str{indx}), matl_strct(indx), ...
-        'Did not parse a fully qualified datetime successfully.')
-      end
+      error_msg = 'Did not parse a local date successfully.';
+
+      runStructuredTest(testCase, toml_str, matlab_strct, error_msg)
     end
 
     function testLocalTime(testCase)
@@ -289,13 +290,12 @@ classdef TestToml < matlab.unittest.TestCase
                  };
 
       % in structs for even easier reference
-      matl_strct = cellfun(@(a) struct('odt', a), matl_obj);
+      matlab_strct = cellfun(@(a) struct('odt', a), matl_obj, ...
+                             'uniformoutput', false);
 
-      % check each one in turn
-      for indx = 1:length(toml_str)
-        testCase.verifyEqual(toml.parse(toml_str{indx}), matl_strct(indx), ...
-        'Did not parse a fully qualified datetime successfully.')
-      end
+      error_msg = 'Did not parse a local date successfully.';
+
+      runStructuredTest(testCase, toml_str, matlab_strct, error_msg)
     end
 
     function testArrays(testCase)
