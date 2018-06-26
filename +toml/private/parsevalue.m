@@ -35,6 +35,63 @@ function val = parsevalue(str)
   % trim space on each side
   trimmed_val = strtrim(val);
 
+%% datetimes
+
+  % make regexes
+  is_match = @(s, p) ~isempty(regexp(s, p));
+  whole_line_match = @(p) is_match(trimmed_val, ['^', p, '$']);
+  date_regexp = '\d{4}-\d{2}-\d{2}';
+  upto12 = '(01|02|03|04|05|06|07|08|09|10|11|12)';
+  fract_sec = '\.\d{1,9}';
+  time_regexp = [upto12, ':[0-6]\d:[0-6]\d(', fract_sec, ')?'];
+  offset_regexp = ['(Z|[-+]', upto12, ':[0-6]\d(:[0-6]\d)?)'];
+
+  % see what fits
+  has_date = is_match(trimmed_val, date_regexp);
+  has_time = is_match(trimmed_val, time_regexp);
+  is_datetime = has_date && has_time;
+  is_datetime_t = is_datetime && ...
+      is_match(trimmed_val, [date_regexp, 'T', time_regexp]);
+  is_datetime_space = is_datetime &&  ~is_datetime_t && ...
+      is_match(trimmed_val, [date_regexp, ' ', time_regexp]);
+  has_fr_sec = has_time && is_match(trimmed_val, fract_sec);
+  has_offset = has_time && is_match(trimmed_val, offset_regexp);
+
+  % make formats
+  date_fmt = 'yyyy-MM-dd';
+  time_fmt = 'HH:mm:ss';
+  fract_sec_fmt = '.SSSSSSSSS';
+
+  % do what we can with it
+  if is_datetime
+    dtargs = {};
+    if is_datetime_t
+      fmt_str = [date_fmt, '''T''', time_fmt];
+    else
+      fmt_str = [date_fmt, ' ', time_fmt];
+    end
+    if has_fr_sec
+      fmt_str = [fmt_str, fract_sec_fmt];
+    end
+    if has_offset
+      fmt_str = [fmt_str, 'Z'];
+      dtargs = {'TimeZone', 'UTC'};
+    end
+    val = datetime(trimmed_val, 'InputFormat', fmt_str, dtargs{:});
+    return
+  elseif has_date
+    fmt_str = date_fmt;
+    val = datetime(trimmed_val, 'InputFormat', fmt_str);
+    return
+  elseif has_time
+    fmt_str = time_fmt;
+    if has_fr_sec
+      fmt_str = [fmt_str, fract_sec_fmt];
+    end
+    val = datetime(trimmed_val, 'InputFormat', fmt_str);
+    return
+  end
+
 %% check for numeric types
 
   % utils for integers
@@ -48,12 +105,15 @@ function val = parsevalue(str)
   % binary
   if is_int(trimmed_val, specs.bin, 'b')
     val = bin2dec(descore(trimmed_val));
+    return
   % octal
   elseif is_int(trimmed_val, specs.oct, 'o')
     val = base2dec(descore(trimmed_val), 8);
+    return
   % hexadecimal
   elseif is_int(trimmed_val, specs.hex, 'x')
     val = hex2dec(descore(trimmed_val));
+    return
   % decimal (including floats)
   elseif all(ismember(trimmed_val, specs.dec))
     val = str2double(strrep(val, '_', ''));
@@ -62,11 +122,13 @@ function val = parsevalue(str)
       error('toml:DecIntLeadingZeros', ...
             'Decimal integers may not have leading zeros.')
     end
+    return
   end
 
   % special values of float
   if any(strcmp(trimmed_val, {'inf', '+inf', '-inf', 'nan', '+nan', '-nan'}))
     val = str2double(val);
+    return
   elseif any(strcmpi(trimmed_val, {'inf', '+inf', '-inf', 'nan', '+nan', '-nan'}))
     error('toml:UppercaseSpecialFloat', ...
           'Special floating-point values must be lowercase.')
@@ -75,6 +137,7 @@ function val = parsevalue(str)
 %% booleans
   if any(strcmp(trimmed_val, {'true', 'false'}))
     val = str2num(trimmed_val);
+    return
   elseif any(strcmpi(trimmed_val, {'true', 'false'}))
     error('toml:UppercaseBoolean', ...
           'Boolean values must be lowercase.')
@@ -122,6 +185,8 @@ function val = parsevalue(str)
     ucode_match = '\\(u[A-Fa-f0-9]{4}|U[A-Fa-f0-9]{8})';
     ucode_replace = '${char(hex2dec($1(2:end)))}';
     val = regexprep(val, ucode_match, ucode_replace);
+
+    return
   end
 
   % literal strings
@@ -145,62 +210,9 @@ function val = parsevalue(str)
     % newline in string, tell caller the value is incomplete
     else
       val = '';
-      return
     end
-  end
 
-%% datetimes
-
-  % make regexes
-  is_match = @(s, p) ~isempty(regexp(s, p));
-  whole_line_match = @(p) is_match(trimmed_val, ['^', p, '$']);
-  date_regexp = '\d{4}-\d{2}-\d{2}';
-  upto12 = '(01|02|03|04|05|06|07|08|09|10|11|12)';
-  fract_sec = '\.\d{1,9}';
-  time_regexp = [upto12, ':[0-6]\d:[0-6]\d(', fract_sec, ')?'];
-  offset_regexp = ['(Z|[-+]', upto12, ':[0-6]\d(:[0-6]\d)?)'];
-
-  % see what fits
-  has_date = is_match(trimmed_val, date_regexp);
-  has_time = is_match(trimmed_val, time_regexp);
-  is_datetime = has_date && has_time;
-  is_datetime_t = is_datetime && ...
-      is_match(trimmed_val, [date_regexp, 'T', time_regexp]);
-  is_datetime_space = is_datetime &&  ~is_datetime_t && ...
-      is_match(trimmed_val, [date_regexp, ' ', time_regexp]);
-  has_fr_sec = has_time && is_match(trimmed_val, fract_sec);
-  has_offset = has_time && is_match(trimmed_val, offset_regexp);
-
-  % make formats
-  date_fmt = 'yyyy-MM-dd';
-  time_fmt = 'HH:mm:ss';
-  fract_sec_fmt = '.SSSSSSSSS';
-
-  % do what we can with it
-  if is_datetime
-    dtargs = {};
-    if is_datetime_t
-      fmt_str = [date_fmt, '''T''', time_fmt];
-    else
-      fmt_str = [date_fmt, ' ', time_fmt];
-    end
-    if has_fr_sec
-      fmt_str = [fmt_str, fract_sec_fmt];
-    end
-    if has_offset
-      fmt_str = [fmt_str, 'Z'];
-      dtargs = {'TimeZone', 'UTC'};
-    end
-    val = datetime(trimmed_val, 'InputFormat', fmt_str, dtargs{:});
-  elseif has_date
-    fmt_str = date_fmt;
-    val = datetime(trimmed_val, 'InputFormat', fmt_str);
-  elseif has_time
-    fmt_str = time_fmt;
-    if has_fr_sec
-      fmt_str = [fmt_str, fract_sec_fmt];
-    end
-    val = datetime(trimmed_val, 'InputFormat', fmt_str);
+    return
   end
 
 %% arrays
@@ -232,6 +244,8 @@ function val = parsevalue(str)
     elseif all(cellfun(@isnumeric, val))
       val = cell2mat(val);
     end
+
+    return
   end
 
 %% tables
@@ -263,6 +277,11 @@ function val = parsevalue(str)
     for elem = 1:length(vals)
       val = setfield(val, key_names{elem}{:}, parsevalue(vals{elem}{2}));
     end
+
+    return
   end
 
+%% invalid datatype?
+  error('toml:InvalidType', ...
+        'Unknown datatype: %s', trimmed_val)
 end
