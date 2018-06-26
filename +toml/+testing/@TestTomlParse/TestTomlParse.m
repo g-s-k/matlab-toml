@@ -1,4 +1,4 @@
-classdef TestToml < matlab.unittest.TestCase
+classdef TestTomlParse < matlab.unittest.TestCase
 
   methods (Access = private)
 
