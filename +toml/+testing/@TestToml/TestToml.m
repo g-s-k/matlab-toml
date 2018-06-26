@@ -293,7 +293,7 @@ classdef TestToml < matlab.unittest.TestCase
       matlab_strct = cellfun(@(a) struct('odt', a), matl_obj, ...
                              'uniformoutput', false);
 
-      error_msg = 'Did not parse a local date successfully.';
+      error_msg = 'Did not parse a local time successfully.';
 
       runStructuredTest(testCase, toml_str, matlab_strct, error_msg)
     end
@@ -310,18 +310,18 @@ classdef TestToml < matlab.unittest.TestCase
                  };
 
       % matlab versions, respectively
-      matl_obj(1).key = [1, 2, 3];
-      matl_obj(2).key = {'a', 'b', 'c'};
-      matl_obj(3).key = {[1, 2], {'a', 'b'}};
-      matl_obj(4).key = {'abcd', 'comma, separated, values'};
-      matl_obj(5).key = [1, 2, 3];
-      matl_obj(6).key = [1, 2];
+      matlab_strct = { ...
+          struct('key', [1, 2, 3]) ...
+        , struct('key', {{'a', 'b', 'c'}}) ...
+        , struct('key', {{[1, 2], {'a', 'b'}}}) ...
+        , struct('key', {{'abcd', 'comma, separated, values'}}) ...
+        , struct('key', [1, 2, 3]) ...
+        , struct('key', [1, 2]) ...
+                     };
 
-      % check each one in turn
-      for indx = 1:length(toml_str)
-        testCase.verifyEqual(toml.parse(toml_str{indx}), matl_obj(indx), ...
-        'Did not parse an array successfully.')
-      end
+      error_msg = 'Did not parse an array successfully.';
+
+      runStructuredTest(testCase, toml_str, matlab_strct, error_msg)
     end
 
     function testInlineTables(testCase)
