@@ -7,5 +7,4 @@ An implementation of [TOML](https://github.com/toml-lang/toml) in MATLAB.
   * Error for re-defining a table
   * Error for re-defining an array
   * Error for table-array name collision
-* Convenience function to load data from file
 * Encoding

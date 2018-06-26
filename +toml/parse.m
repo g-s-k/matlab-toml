@@ -3,6 +3,8 @@
 %   PARSE(toml_str) returns the MATLAB representation of the
 %   TOML-formatted data in `toml_str`. If it is invalid TOML, an
 %   appropriate exception will be raised.
+%
+%   See also TOML.LOAD
 
 function obj_out = parse(toml_str)
 %% pre-emptive checking
