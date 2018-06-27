@@ -5,8 +5,6 @@ Supports the standard as of commit [1b26808](https://github.com/toml-lang/toml/t
 
 ## Todo
 * Better testing
-  * More exhaustive testing of `toml.encode`
-    * Validation of non-serializable types
   * Test coverage for `toml.write`
   * Test type validation in `toml.decode`
 * New features
