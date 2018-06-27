@@ -1,3 +1,8 @@
+% TEST run test suite for TOML encode/decode/read/write
+%
+%   TEST runs all of the tests present in the `+testing` directory
+%   that follow MATLAB's unit test naming conventions.
+
 % import testing framework
 import matlab.unittest.*
 
