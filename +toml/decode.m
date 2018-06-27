@@ -55,11 +55,16 @@ function obj_out = decode(toml_str)
     [key, value] = strtok(toml_nonempty{current_line}, '=');
     key_seq = parsekey(key);
     % ensure we have a complete value
+    force = false;
     while true
-      value_fix = parsevalue(value);
-      if isempty(value_fix) && ~iscell(value_fix) && current_line < length(toml_nonempty)
-        current_line = current_line + 1;
-        value = sprintf('%s\n%s', value, toml_nonempty{current_line});
+      value_fix = parsevalue(value, force);
+      if isempty(value_fix) && ~iscell(value_fix)
+        if current_line < length(toml_nonempty)
+          current_line = current_line + 1;
+          value = sprintf('%s\n%s', value, toml_nonempty{current_line});
+        else
+          force = true;
+        end
       else
         break
       end

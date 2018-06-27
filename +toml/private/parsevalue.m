@@ -16,7 +16,7 @@
 %
 %   See also PARSEKEY
 
-function val = parsevalue(str)
+function val = parsevalue(str, force)
 %% check for noncompletion
   if isempty(str)
     val = '';
@@ -178,6 +178,9 @@ function val = parsevalue(str)
       val = trimmed_val(2:end-1);
 
     % newline in string, tell caller the value is incomplete
+    elseif force
+      error('toml:IncompleteString', ...
+            'String without closing quote: %s', trimmed_val)
     else
       val = '';
       return
@@ -221,6 +224,9 @@ function val = parsevalue(str)
       val = trimmed_val(2:end-1);
 
     % newline in string, tell caller the value is incomplete
+    elseif force
+      error('toml:IncompleteString', ...
+            'String without closing quote: %s', trimmed_val)
     else
       val = '';
     end
@@ -233,6 +239,10 @@ function val = parsevalue(str)
   if trimmed_val(1) == '['
     % is it all here yet?
     if trimmed_val(end) ~= ']'
+      if force
+        error('toml:IncompleteArray', ...
+              'Array without closing bracket: %s', trimmed_val)
+      end
       val = [];
       return
     % remove outer brackets
@@ -271,6 +281,10 @@ function val = parsevalue(str)
   if ~isempty(regexp(trimmed_val, '^{(\s*[^=]+\s*=|})', 'ONCE'))
     % is it all here yet?
     if trimmed_val(end) ~= '}'
+      if force
+        error('toml:IncompleteInlineTable', ...
+              'Inline table without closing curly brace: %s', trimmed_val)
+      end
       val = [];
       return
     % remove outer brackets
