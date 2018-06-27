@@ -6,5 +6,15 @@
 %   See also TOML.DECODE, TOML.WRITE
 
 function toml_str = encode(m_strct)
-  toml_str = repr(m_strct);
+  if isstruct(m_strct)
+    if isscalar(m_strct)
+      toml_str = repr(m_strct);
+    else
+      error('toml:NonScalarStruct', ...
+            'TOML base table must be scalar.')
+    end
+  else
+    error('toml:InvalidBaseType', ...
+          'TOML base variable must be a struct.')
+  end
 end
