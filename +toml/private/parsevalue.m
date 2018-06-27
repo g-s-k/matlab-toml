@@ -41,10 +41,12 @@ function val = parsevalue(str)
   is_match = @(s, p) ~isempty(regexp(s, p));
   whole_line_match = @(p) is_match(trimmed_val, ['^', p, '$']);
   date_regexp = '\d{4}-\d{2}-\d{2}';
-  upto12 = '(01|02|03|04|05|06|07|08|09|10|11|12)';
+  upto24 = ['(', strjoin( ...
+      arrayfun(@(elem) sprintf('%02d', elem), 0:23, 'uniformoutput', false), ...
+      '|'), ')'];
   fract_sec = '\.\d{1,9}';
-  time_regexp = [upto12, ':[0-6]\d:[0-6]\d(', fract_sec, ')?'];
-  offset_regexp = ['(Z|[-+]', upto12, ':[0-6]\d(:[0-6]\d)?)'];
+  time_regexp = [upto24, ':[0-6]\d:[0-6]\d(', fract_sec, ')?'];
+  offset_regexp = ['(Z|[-+]', upto24, ':[0-6]\d(:[0-6]\d)?)$'];
 
   % see what fits
   has_date = is_match(trimmed_val, date_regexp);

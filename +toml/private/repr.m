@@ -65,7 +65,7 @@ function str = repr(obj, parent)
     case 'datetime'
       obj.Format = 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS';
       if ~isempty(obj.TimeZone)
-        obj.Format = [obj.Format, 'Z'];
+        obj.Format = [obj.Format, 'XXX'];
       end
       str = char(obj);
 
