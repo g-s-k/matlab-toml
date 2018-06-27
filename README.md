@@ -5,7 +5,6 @@ Supports the standard as of commit [1b26808](https://github.com/toml-lang/toml/t
 
 ## Todo
 * Better testing
-  * Test coverage for `toml.write`
   * Test type validation in `toml.decode`
 * Assess code for removal
   * Will [this line](https://github.com/g-s-k/matlab-toml/blob/master/%2Btoml/private/adjust_key_stack.m#L26) ever run on valid TOML?

@@ -33,7 +33,7 @@ classdef TestTomlRead < matlab.unittest.TestCase
             ) ...
           );
 
-      c_dir = fileparts(mfilename('fullpath'));
+      c_dir = fileparts(fileparts(mfilename('fullpath')));
       example_file = fullfile(c_dir, 'example.toml');
 
       testCase.verifyEqual(toml.read(example_file), matl_strct, ...
