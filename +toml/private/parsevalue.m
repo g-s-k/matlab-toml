@@ -268,7 +268,7 @@ function val = parsevalue(str)
 
 %% tables
 
-  if trimmed_val(1) == '{'
+  if ~isempty(regexp(trimmed_val, '^{(\s*[^=]+\s*=|})', 'ONCE'))
     % is it all here yet?
     if trimmed_val(end) ~= '}'
       val = [];
