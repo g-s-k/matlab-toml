@@ -7,6 +7,6 @@
 
 function write(filename, matl_strct)
   fid = fopen(filename, 'w');
-  fprintf(fid, toml.encode(matl_strct));
+  fprintf(fid, '%s', toml.encode(matl_strct));
   fclose(fid);
 end
