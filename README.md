@@ -7,5 +7,10 @@ Supports the standard as of commit [1b26808](https://github.com/toml-lang/toml/t
 * Better testing
   * Test coverage for `toml.write`
   * Test type validation in `toml.decode`
+* Assess code for removal
+  * Will [this line](https://github.com/g-s-k/matlab-toml/blob/master/%2Btoml/private/adjust_key_stack.m#L26) ever run if on valid TOML?
+  * Will [this line](https://github.com/g-s-k/matlab-toml/blob/master/%2Btoml/private/get_nested_field.m#L15) ever run on valid TOML?
+  * Will [this line](https://github.com/g-s-k/matlab-toml/blob/master/%2Btoml/private/set_nested_field.m#L51) ever run on valid TOML?
+  * Will [this line](https://github.com/g-s-k/matlab-toml/blob/master/%2Btoml/private/set_nested_field.m#L63) ever run on valid TOML?
 * New features
   * Type coercion in `toml.encode`

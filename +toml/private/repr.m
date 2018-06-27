@@ -49,7 +49,7 @@ function str = repr(obj, parent)
         if isstruct(vals{indx})
           if nargin > 1
             fmt_str = ['%s[', parent, '.%s]\n%s'];
-            new_parent = [parent, '.', new_parent];
+            new_parent = [parent, '.', fn{indx}];
           else
             fmt_str = '%s[%s]\n%s';
           end

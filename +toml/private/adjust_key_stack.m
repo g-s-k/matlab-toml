@@ -6,7 +6,7 @@
 %   corrected pointer is returned.
 
 function key_stack = adjust_key_stack(obj, key_stack)
-  if length(key_stack) > 0
+  if ~isempty(key_stack)
     % see if another one is there
     switch class(obj)
       case 'cell'

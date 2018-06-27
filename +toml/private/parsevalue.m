@@ -38,8 +38,7 @@ function val = parsevalue(str)
 %% datetimes
 
   % make regexes
-  is_match = @(s, p) ~isempty(regexp(s, p));
-  whole_line_match = @(p) is_match(trimmed_val, ['^', p, '$']);
+  is_match = @(s, p) ~isempty(regexp(s, p, 'ONCE'));
   date_regexp = '\d{4}-\d{2}-\d{2}';
   upto24 = ['(', strjoin( ...
       arrayfun(@(elem) sprintf('%02d', elem), 0:23, 'uniformoutput', false), ...
@@ -54,8 +53,6 @@ function val = parsevalue(str)
   is_datetime = has_date && has_time;
   is_datetime_t = is_datetime && ...
       is_match(trimmed_val, [date_regexp, 'T', time_regexp]);
-  is_datetime_space = is_datetime &&  ~is_datetime_t && ...
-      is_match(trimmed_val, [date_regexp, ' ', time_regexp]);
   has_fr_sec = has_time && is_match(trimmed_val, fract_sec);
   has_offset = has_time && is_match(trimmed_val, offset_regexp);
 
@@ -125,7 +122,7 @@ function val = parsevalue(str)
     val = hex2dec(descore(trimmed_val));
     return
   % decimal (including floats)
-  elseif ~isempty(regexp(trimmed_val, specs.dec))
+  elseif ~isempty(regexp(trimmed_val, specs.dec, 'ONCE'))
     val = str2double(strrep(val, '_', ''));
     % error for using leading zeros on a decimal integer
     if isfinite(val) && ~mod(val, 1) && val && trimmed_val(1) == '0'
@@ -151,7 +148,7 @@ function val = parsevalue(str)
 
 %% booleans
   if any(strcmp(trimmed_val, {'true', 'false'}))
-    val = str2num(trimmed_val);
+    val = ~mod(numel(trimmed_val), 2);
     return
   elseif any(strcmpi(trimmed_val, {'true', 'false'}))
     error('toml:UppercaseBoolean', ...

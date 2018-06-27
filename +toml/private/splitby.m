@@ -22,7 +22,7 @@ function parsed = splitby(str, to_split_by, to_respect)
     % check for splittability
     if str(ch) == to_split_by
       % check each delimiter (set) for lexical closure
-      not_ready = logical(zeros(size(delims)));
+      not_ready = zeros(size(delims));
       for delim = 1:length(delims)
         not_ready(delim) = delims(delim).check_in(delims(delim).depth);
       end
@@ -54,6 +54,5 @@ function dd = delim_data(delim)
       dd.match_end = @(c) c == delim(2);
       % we want no levels of immersion
       dd.check_in = @(x) min(1, x);
-    otherwise
   end
 end
