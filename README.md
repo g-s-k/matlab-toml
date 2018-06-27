@@ -7,9 +7,7 @@ Supports the standard as of commit [1b26808](https://github.com/toml-lang/toml/t
 * Better testing
   * More exhaustive testing of `toml.encode`
     * 2D char arrays
-    * Booleans
     * Cell arrays of structs (table-list format in TOML)
-    * Datetime objects
     * Validation of non-serializable types
   * Test coverage for `toml.write`
   * Test type validation in `toml.decode`

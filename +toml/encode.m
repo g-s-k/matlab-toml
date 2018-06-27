@@ -8,6 +8,12 @@
 function toml_str = encode(m_strct)
   if isstruct(m_strct)
     if isscalar(m_strct)
+      % order fields so nothing gets nested wrong
+      field_types = structfun(@isstruct, m_strct);
+      sub_structs = find(field_types);
+      new_order = [setdiff(1:numel(field_types), sub_structs), sub_structs.'];
+      m_strct = orderfields(m_strct, new_order);
+      % serialize it recursively
       toml_str = repr(m_strct);
     else
       error('toml:NonScalarStruct', ...
