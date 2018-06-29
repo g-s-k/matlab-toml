@@ -4,6 +4,12 @@
 
 function str = repr(obj, parent)
 
+  if ispc
+    newline = sprintf('\r\n');
+  else
+    newline = sprintf('\n');
+  end
+
   switch class(obj)
 
     % strings
@@ -31,9 +37,9 @@ function str = repr(obj, parent)
     % cell arrays
     case 'cell'
       if all(cellfun(@isstruct, obj))
-        fmtter = @(a) sprintf('[[%s]]\n%s', parent, repr(a));
+        fmtter = @(a) sprintf('[[%s]]%s%s', parent, newline, repr(a));
         cel_str = cellfun(fmtter, obj, 'uniformoutput', false);
-        str = strjoin(cel_str, sprintf('\n'));
+        str = strjoin(cel_str, newline);
       else
         cel_mod = cellfun(@repr, obj, 'uniformoutput', false);
         str = ['[', strjoin(cel_mod, ', '), ']'];
@@ -48,17 +54,17 @@ function str = repr(obj, parent)
         new_parent = fn{indx};
         if isstruct(vals{indx})
           if nargin > 1
-            fmt_str = ['%s[', parent, '.%s]\n%s'];
+            fmt_str = ['%1$s[', parent, '.%2$s]%4$s%3$s'];
             new_parent = [parent, '.', fn{indx}];
           else
-            fmt_str = '%s[%s]\n%s';
+            fmt_str = '%1$s[%2$s]%4$s%3$s';
           end
         elseif iscell(vals{indx}) && all(cellfun(@isstruct, vals{indx}))
-          fmt_str = '%1$s%3$s\n';
+          fmt_str = '%1$s%3$s%4$s';
         else
-          fmt_str = '%s%s = %s\n';
+          fmt_str = '%1$s%2$s = %3$s%4$s';
         end
-        str = sprintf(fmt_str, str, fn{indx}, repr(vals{indx}, new_parent));
+        str = sprintf(fmt_str, str, fn{indx}, repr(vals{indx}, new_parent), newline);
       end
 
     % datetime objects
