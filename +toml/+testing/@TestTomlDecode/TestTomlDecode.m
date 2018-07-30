@@ -304,6 +304,8 @@ classdef TestTomlDecode < matlab.unittest.TestCase
         , 'Failed to reject invalid TOML data: unclosed multiline string.' ...
                    }} ...
         );
+
+    invalidEscape = num2cell(setdiff(char(33:126), 'btnfr"\uU'));
   end
 
   methods (Test, ParameterCombination = 'sequential')
@@ -314,6 +316,14 @@ classdef TestTomlDecode < matlab.unittest.TestCase
 
     function testInvalidInputs(testCase, invalidInput)
       testCase.verifyError(@() toml.decode(invalidInput{1}), invalidInput{2:3})
+    end
+
+    function testInvalidStringEscapes(testCase, invalidEscape)
+      ch = char(invalidEscape);
+      str_to_parse = sprintf('key = "\\%s"', ch);
+      testCase.verifyError(@() toml.decode(str_to_parse), ...
+                           'toml:InvalidEscapeSequence', ...
+                           ['Did not reject a reserved escape sequence: "\', ch, '"'])
     end
 
   end
@@ -362,19 +372,6 @@ classdef TestTomlDecode < matlab.unittest.TestCase
       testCase.verifyError(@() toml.decode(toml_str{6}), ...
        'toml:UppercaseSpecialFloat', ...
        'Did not raise an error for uppercase special float values.')
-    end
-
-    function testReservedEscapes(testCase)
-      valid_esc = 'btnfr"\uU';
-      all_glyphs = char(33:126);
-      invalid_esc = setdiff(all_glyphs, valid_esc);
-
-      for ch = invalid_esc
-        str_to_parse = sprintf('key = "\\%s"', ch);
-        testCase.verifyError(@() toml.decode(str_to_parse), ...
-         'toml:InvalidEscapeSequence', ...
-         ['Did not reject a reserved escape sequence: "\', ch, '"'])
-      end
     end
 
     function testMultilineBasicString(testCase)
