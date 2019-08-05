@@ -172,6 +172,11 @@ function val = parsevalue(str, force)
       % trim whitespace for backslashes
       val = regexprep(val, '\\\n\s+', '');
 
+    % is it complete but empty?
+    elseif isequal(trimmed_val(1:2), '""')
+      % set to self so caller doesn't find it empty
+      val = '""';
+
     % is it complete but not multiline?
     elseif trimmed_val(2) ~= '"' && trimmed_val(end) == '"'
       % remove quotes
@@ -218,6 +223,11 @@ function val = parsevalue(str, force)
       if val(1) == sprintf('\n')
         val = val(2:end);
       end
+
+    % is it complete but empty?
+		elseif isequal(trimmed_val(1:2), '''''')
+      % set to self so caller doesn't find it empty
+      val = '''''';
 
     % is it complete but not multiline?
     elseif trimmed_val(2) ~= '''' && trimmed_val(end) == ''''

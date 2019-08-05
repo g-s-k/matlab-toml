@@ -58,6 +58,7 @@ function obj_out = decode(toml_str)
     force = false;
     while true
       value_fix = parsevalue(value, force);
+      % loop for possible multiline values
       if isempty(value_fix) && ~iscell(value_fix)
         if current_line < length(toml_nonempty)
           current_line = current_line + 1;
@@ -66,6 +67,11 @@ function obj_out = decode(toml_str)
           force = true;
         end
       else
+        % convert closed but empty string values to empty char
+        if numel(value_fix) == 2 && ...
+            (isequal(value_fix(1:2), '""') || isequal(value_fix(1:2), ''''''))
+          value_fix = '';
+        end
         break
       end
     end
