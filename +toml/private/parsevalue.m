@@ -246,7 +246,7 @@ function val = parsevalue(str, force)
   end
 
 %% arrays
-
+  % is it an array?
   if trimmed_val(1) == '['
     % get starting and ending brackets
     starting_brackets = regexp(trimmed_val, '^\s*\[+[^0-9a-zA-Z]*', 'match');
@@ -267,6 +267,7 @@ function val = parsevalue(str, force)
     % remove outer brackets
     else
       val = trimmed_val(2:end-1);
+      max_dimension = max(size(starting_brackets));
     end
 
     if isempty(val)
@@ -276,10 +277,13 @@ function val = parsevalue(str, force)
 
     % split array while respecting nesting
     val = splitby(val, ',', {'{}', '[]', '"', ''''});
-
     val = cellfun(@strtrim, val, 'uniformoutput', false);
+    row_count = sum(cellfun(@(x) isequal(x(1), '[') && ...
+      isequal(x(end), ']'), val));
+    if row_count == 0, row_count = 1; end
     val = val(~cellfun(@isempty, val));
     val = cellfun(@parsevalue, val, 'uniformoutput', false);
+    val = reshape(val, row_count, []);
     % check homogeneity
     contained_types = cellfun(@class, val, 'uniformoutput', false);
     contained_sizes = cellfun(@numel, val);
@@ -289,7 +293,17 @@ function val = parsevalue(str, force)
       error('toml:HeterogeneousArray', ...
             'All elements of a TOML array must be the same type.')
     elseif all(cellfun(@isnumeric, val))
-      val = cell2mat(val);
+      % check if numeric cells have the same number of columns per row
+      cell_sizes = cell2mat(cellfun(@size, val, 'UniformOutput', false));
+      if numel(unique(cell_sizes(:, 1))) == 1 && numel(unique(cell_sizes(:, 2))) == 1
+        % apply dimensions to fully numeric array
+        if max_dimension == 2
+          max_dimension = 1;
+        elseif max_dimension == 1
+          max_dimension = 2;
+        end
+        val = cat(max_dimension, val{:});
+      end
     end
 
     return
