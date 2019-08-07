@@ -17,7 +17,7 @@ function toml_str = encode(m_strct)
       new_order = [setdiff(1:numel(tmp), sub_structs), sub_structs.'];
       m_strct = orderfields(m_strct, new_order);
       % serialize it recursively
-      toml_str = repr(m_strct);
+      toml_str = strtrim(repr(m_strct));
     else
       error('toml:NonScalarStruct', ...
             'TOML base table must be scalar.')

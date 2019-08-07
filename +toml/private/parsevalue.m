@@ -193,20 +193,17 @@ function val = parsevalue(str, force)
 
     % common post-processing
     % catch invalid escapes
-    invalid_esc = regexp(val, '\\[^btnfr"\\uU]', 'match');
+    invalid_esc = regexp(val, '(?<!\\)\\(\\\\)*([^btnfr"\\uU])', 'match');
     if ~isempty(invalid_esc)
       error('toml:InvalidEscapeSequence', ...
             ['Invalid escape sequence: \', invalid_esc{:}])
     end
-    % escaped quotes
-    val = strrep(val, '\"', '"');
-    % escaped characters
-    val = regexprep(val, '(\\[btnfr\\])', '${sprintf($1)}');
-    % unicode points
-    ucode_match = '\\(u[A-Fa-f0-9]{4}|U[A-Fa-f0-9]{8})';
+    % unicode points (only 4 digit max hex codes are supported)
+    ucode_match = '(?<!\\)\\(u[A-Fa-f0-9]{1,4}|U[A-Fa-f0-9]{1,4})';
     ucode_replace = '${char(hex2dec($1(2:end)))}';
     val = regexprep(val, ucode_match, ucode_replace);
-
+    % escaped characters
+    val = regexprep(val, '(\\[btnfr"\\])', '${sprintf($1)}');
     return
   end
 
