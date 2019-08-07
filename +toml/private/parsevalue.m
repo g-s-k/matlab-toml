@@ -225,7 +225,7 @@ function val = parsevalue(str, force)
       end
 
     % is it complete but empty?
-		elseif isequal(trimmed_val(1:2), '''''')
+    elseif isequal(trimmed_val(1:2), '''''')
       % set to self so caller doesn't find it empty
       val = '''''';
 
@@ -248,8 +248,16 @@ function val = parsevalue(str, force)
 %% arrays
 
   if trimmed_val(1) == '['
+    % get starting and ending brackets
+    starting_brackets = regexp(trimmed_val, '^\s*\[+[^0-9a-zA-Z]*', 'match');
+    if isempty(starting_brackets), starting_brackets = ''; end
+    starting_brackets = strjoin(split(starting_brackets), '');
+    ending_brackets = regexp(trimmed_val, '[^0-9a-zA-Z]*\s*\]+$', 'match');
+    if isempty(ending_brackets), ending_brackets = ''; end
+    ending_brackets = strjoin(split(ending_brackets), '');
+    
     % is it all here yet?
-    if trimmed_val(end) ~= ']'
+    if ~isequal(size(starting_brackets), size(ending_brackets))
       if force
         error('toml:IncompleteArray', ...
               'Array without closing bracket: %s', trimmed_val)
