@@ -196,7 +196,8 @@ function val = parsevalue(str, force)
     invalid_esc = regexp(val, '(?<!\\)\\(\\\\)*([^btnfr"\\uU])', 'match');
     if ~isempty(invalid_esc)
       error('toml:InvalidEscapeSequence', ...
-            ['Invalid escape sequence: \', invalid_esc{:}])
+            ['Invalid escape sequence: \', invalid_esc{:}, ...
+            '\nFound in this value: ', strrep(str, '\', '\\')])
     end
     % unicode points (only 4 digit max hex codes are supported)
     ucode_match = '(?<!\\)\\(u[A-Fa-f0-9]{1,4}|U[A-Fa-f0-9]{1,4})';
