@@ -1,7 +1,9 @@
 # matlab-toml
 An implementation of [TOML](https://github.com/toml-lang/toml) in MATLAB.
 
-Supports the standard as of commit [1b26808](https://github.com/toml-lang/toml/tree/1b26808a8190f6d7d65bf31091c1f8561e1a6feb).
+Aims to support the standard as of commit [1b26808](https://github.com/toml-lang/toml/tree/1b26808a8190f6d7d65bf31091c1f8561e1a6feb).
+
+However, only supports Unicode with 4 hexadecimal digits.
 
 ## Todo
 * Assess code for removal
