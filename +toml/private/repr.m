@@ -58,6 +58,7 @@ function str = repr(obj, parent)
 
     % structures
     case 'struct'
+      obj = sortfields(obj);
       fn = fieldnames(obj);
       vals = struct2cell(obj);
       str = '';
