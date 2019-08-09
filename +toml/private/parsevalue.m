@@ -247,25 +247,31 @@ function val = parsevalue(str, force)
   % is it an array?
   if trimmed_val(1) == '['
     % get starting and ending brackets
-    starting_brackets = regexp(trimmed_val, '^\s*\[+[^0-9a-zA-Z]*', 'match');
-    if isempty(starting_brackets), starting_brackets = ''; end
-    starting_brackets = strjoin(split(starting_brackets), '');
-    ending_brackets = regexp(trimmed_val, '[^0-9a-zA-Z]*\s*\]+$', 'match');
-    if isempty(ending_brackets), ending_brackets = ''; end
-    ending_brackets = strjoin(split(ending_brackets), '');
+    beginning_brackets = regexp(trimmed_val, '^\s*\[+[^0-9a-zA-Z"]*', 'match');
+    if isempty(beginning_brackets), beginning_brackets = ''; end
+    beginning_brackets = strjoin(split(beginning_brackets), '');
+    closing_brackets = regexp(trimmed_val, '[^0-9a-zA-Z"]*\s*\]+$', 'match');
+    if isempty(closing_brackets), closing_brackets = ''; end
+    closing_brackets = strjoin(split(closing_brackets), '');
+
+    % get all opening and closing brackets
+    num_opening_brackets = sum(ismember(strjoin(...
+      regexp(trimmed_val, '\s*\[+[^0-9a-zA-Z"]*', 'match'), ''), '['));
+    num_closing_brackets = sum(ismember(strjoin(...
+      regexp(trimmed_val, '\s*\]+[^0-9a-zA-Z"]*', 'match'), ''), ']'));
     
     % is it all here yet?
-    if ~isequal(size(starting_brackets), size(ending_brackets))
+    if isequal(num_opening_brackets, num_closing_brackets)
+      % remove outer brackets
+      val = trimmed_val(2:end-1);
+      max_dimension = max(size(beginning_brackets));
+    else
       if force
         error('toml:IncompleteArray', ...
-              'Array without closing bracket: %s', trimmed_val)
+          'Array without closing bracket: %s', trimmed_val)
       end
       val = [];
       return
-    % remove outer brackets
-    else
-      val = trimmed_val(2:end-1);
-      max_dimension = max(size(starting_brackets));
     end
 
     if isempty(val)
@@ -293,7 +299,7 @@ function val = parsevalue(str, force)
     elseif all(cellfun(@isnumeric, val))
       % check if numeric cells have the same number of columns per row
       cell_sizes = cell2mat(cellfun(@size, val, 'UniformOutput', false));
-      if numel(unique(cell_sizes(:, 1))) == 1 && numel(unique(cell_sizes(:, 2))) == 1
+      if numel(unique(cell_sizes(:, 1))) == 1 && numel(unique(cell_sizes(:, 2))) == 1 && numel(val) > 1
         % apply dimensions to fully numeric array
         if max_dimension == 2
           max_dimension = 1;
