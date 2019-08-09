@@ -41,8 +41,7 @@ function str = repr(obj, parent)
       if numel(obj) == 1
         str = lower(num2str(obj));
       else
-        cel = arrayfun(@repr, obj, 'uniformoutput', false);
-        str = ['[', strjoin(cel, ', '), ']'];
+        str = char(string(bracketarray(obj)));
       end
 
     % cell arrays
