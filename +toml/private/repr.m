@@ -41,7 +41,7 @@ function str = repr(obj, parent)
       if numel(obj) == 1
         str = lower(num2str(obj));
       else
-        str = char(string(bracketarray(obj)));
+        str = bracketarray(obj);
       end
 
     % cell arrays

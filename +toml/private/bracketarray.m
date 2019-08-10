@@ -1,23 +1,43 @@
 function out = bracketarray(in)
-  in_size = size(in);
-  in_dims = ndims(in);
-  if in_dims > 3
-    error('Only 3 dimensional arrays currently supported.')
+  % BRACKETARRAY TOML representation of a MATLAB numerical array, in the style of a numpy array
+  %
+  %   BRACKETARRAY(array) returns the TOML/numpy-like representation of `array' with nested brackets
+  %   [1, 2; 3, 4] becomes [[1,2],[3,4]]
+
+  %   From: https://stackoverflow.com/questions/57438523/in-matlab-how-can-i-write-out-a-multidimensional-array-as-a-string-that-looks-li/57445408#57445408
+  %   By: matlabbit
+
+  out = permute(in, [2, 1, 3:ndims(in)]);
+  out = string(out);
+
+  dimsToCat = ndims(out);
+  if iscolumn(out)
+    dimsToCat = dimsToCat - 1;
   end
 
-  % if array has only 2 dimensions, create the string
-  if in_dims == 2
-    for jj = 1:in_size(1)
-      storage{jj} = strcat('[', strjoin(split(num2str(in(jj, :)))', ','), ']');
-    end
-    out = {strcat('[', strjoin(storage, ','), ']')};
-    return
-  % if array has more than 2 dimensions, recursively send planes of 2 dimensions for encoding
-  else
-    for ii = 1:in_size(end) %<--- this doesn't track dimensions or counts of them
-      out(ii) = bracketarray(in(:,:,ii)); %<--- this is limited to 3 dimensions atm. and out(indexing) need help
-    end
+  for iDim = 1:dimsToCat
+    out = "[" + join(out, ",", iDim) + "]" ;
   end
-  % bracket the final bit together
-  out = {strcat('[', strjoin(out, ','), ']')};
+  out = char(out);
 end
+
+%% Test Suite
+% disp({1, isequal(bracketarray(ones(1,1)), '[1]')})
+% disp({2, isequal(bracketarray(ones(2,1)), '[[1],[1]]')})
+% disp({3, isequal(bracketarray(ones(1,2)), '[1,1]')})
+% disp({4, isequal(bracketarray(ones(2,2)), '[[1,1],[1,1]]')})
+% disp({5, isequal(bracketarray(ones(3,2)), '[[1,1],[1,1],[1,1]]')})
+% disp({6, isequal(bracketarray(ones(2,3)), '[[1,1,1],[1,1,1]]')})
+% disp({7, isequal(bracketarray(ones(1,1,2)), '[[[1]],[[1]]]')})
+% disp({8, isequal(bracketarray(ones(2,1,2)), '[[[1],[1]],[[1],[1]]]')})
+% disp({9, isequal(bracketarray(ones(1,2,2)), '[[[1,1]],[[1,1]]]')})
+% disp({10,isequal(bracketarray(ones(2,2,2)), '[[[1,1],[1,1]],[[1,1],[1,1]]]')})
+% disp({11,isequal(bracketarray(ones(1,1,1,2)), '[[[[1]]],[[[1]]]]')})
+% disp({12,isequal(bracketarray(ones(2,1,1,2)), '[[[[1],[1]]],[[[1],[1]]]]')})
+% disp({13,isequal(bracketarray(ones(1,2,1,2)), '[[[[1,1]]],[[[1,1]]]]')})
+% disp({14,isequal(bracketarray(ones(1,1,2,2)), '[[[[1]],[[1]]],[[[1]],[[1]]]]')})
+% disp({15,isequal(bracketarray(ones(2,1,2,2)), '[[[[1],[1]],[[1],[1]]],[[[1],[1]],[[1],[1]]]]')})
+% disp({16,isequal(bracketarray(ones(1,2,2,2)), '[[[[1,1]],[[1,1]]],[[[1,1]],[[1,1]]]]')})
+% disp({17,isequal(bracketarray(ones(2,2,2,2)), '[[[[1,1],[1,1]],[[1,1],[1,1]]],[[[1,1],[1,1]],[[1,1],[1,1]]]]')})
+% disp({18,isequal(bracketarray(permute(reshape([1:16],2,2,2,2),[2,1,3,4])), '[[[[1,2],[3,4]],[[5,6],[7,8]]],[[[9,10],[11,12]],[[13,14],[15,16]]]]')})
+% disp({19,isequal(bracketarray(ones(1,1,1,1,2)), '[[[[[1]]]],[[[[1]]]]]')})
