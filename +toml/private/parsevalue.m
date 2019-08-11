@@ -187,7 +187,7 @@ function val = parsevalue(str, force)
         % set to self so caller doesn't find it empty
         val = '""';
       else
-      val = '';
+        val = '';
       end
       return
     end
@@ -231,15 +231,15 @@ function val = parsevalue(str, force)
     % newline in string, tell caller the value is incomplete
     elseif force
       error('toml:IncompleteString', ...
-            'String without closing quote: %s', trimmed_val)
+        'String without closing quote: %s', trimmed_val)
     else
       % is it complete but empty?
       if isequal(trimmed_val, '''''')
         % set to self so caller doesn't find it empty
         val = '''''';
       else
-      val = '';
-    end
+        val = '';
+      end
     end
 
     return
