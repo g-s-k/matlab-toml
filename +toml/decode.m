@@ -72,10 +72,6 @@ function obj_out = decode(toml_str)
             (isequal(value_fix(1:2), '""') || isequal(value_fix(1:2), ''''''))
           value_fix = '';
         end
-        % convert empty cell {} to empty double []
-        if isempty(value_fix) && iscell(value_fix)
-          value_fix = [];
-        end
         break
       end
     end
