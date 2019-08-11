@@ -41,3 +41,43 @@ end
 % disp({17,isequal(bracketarray(ones(2,2,2,2)), '[[[[1,1],[1,1]],[[1,1],[1,1]]],[[[1,1],[1,1]],[[1,1],[1,1]]]]')})
 % disp({18,isequal(bracketarray(permute(reshape([1:16],2,2,2,2),[2,1,3,4])), '[[[[1,2],[3,4]],[[5,6],[7,8]]],[[[9,10],[11,12]],[[13,14],[15,16]]]]')})
 % disp({19,isequal(bracketarray(ones(1,1,1,1,2)), '[[[[[1]]]],[[[[1]]]]]')})
+% 
+% assert(isequal(toml.encode(struct('a', ones(1,1))), 'a = 1'), 'ones(1,1) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(2,1))), 'a = [[1],[1]]'), 'ones(2,1) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(1,2))), 'a = [1,1]'), 'ones(1,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(2,2))), 'a = [[1,1],[1,1]]'), 'ones(2,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(3,2))), 'a = [[1,1],[1,1],[1,1]]'), 'ones(3,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(2,3))), 'a = [[1,1,1],[1,1,1]]'), 'ones(2,3) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(1,1,2))), 'a = [[[1]],[[1]]]'), 'ones(1,1,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(2,1,2))), 'a = [[[1],[1]],[[1],[1]]]'), 'ones(2,1,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(1,2,2))), 'a = [[[1,1]],[[1,1]]]'), 'ones(1,2,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(2,2,2))), 'a = [[[1,1],[1,1]],[[1,1],[1,1]]]'), 'ones(2,2,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(1,1,1,2))), 'a = [[[[1]]],[[[1]]]]'), 'ones(1,1,1,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(2,1,1,2))), 'a = [[[[1],[1]]],[[[1],[1]]]]'), 'ones(2,1,1,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(1,2,1,2))), 'a = [[[[1,1]]],[[[1,1]]]]'), 'ones(1,2,1,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(1,1,2,2))), 'a = [[[[1]],[[1]]],[[[1]],[[1]]]]'), 'ones(1,1,2,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(2,1,2,2))), 'a = [[[[1],[1]],[[1],[1]]],[[[1],[1]],[[1],[1]]]]'), 'ones(2,1,2,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(1,2,2,2))), 'a = [[[[1,1]],[[1,1]]],[[[1,1]],[[1,1]]]]'), 'ones(1,2,2,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(2,2,2,2))), 'a = [[[[1,1],[1,1]],[[1,1],[1,1]]],[[[1,1],[1,1]],[[1,1],[1,1]]]]'), 'ones(2,2,2,2) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', permute(reshape([1:16],2,2,2,2),[2,1,3,4]))), 'a = [[[[1,2],[3,4]],[[5,6],[7,8]]],[[[9,10],[11,12]],[[13,14],[15,16]]]]'), 'permute(reshape([1:16],2,2,2,2),[2,1,3,4]) not encoded correctly!');
+% assert(isequal(toml.encode(struct('a', ones(1,1,1,1,2))), 'a = [[[[[1]]]],[[[[1]]]]]'), 'ones(1,1,1,1,2) not encoded correctly!');
+% 
+% assert(isequal(toml.decode('a = 1'), struct('a', ones(1,1))), 'ones(1,1) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[1],[1]]'), struct('a', ones(2,1))), 'ones(2,1) not decoded correctly!');
+% assert(isequal(toml.decode('a = [1,1]'), struct('a', ones(1,2))), 'ones(1,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[1,1],[1,1]]'), struct('a', ones(2,2))), 'ones(2,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[1,1],[1,1],[1,1]]'), struct('a', ones(3,2))), 'ones(3,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[1,1,1],[1,1,1]]'), struct('a', ones(2,3))), 'ones(2,3) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[1]],[[1]]]'), struct('a', ones(1,1,2))), 'ones(1,1,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[1],[1]],[[1],[1]]]'), struct('a', ones(2,1,2))), 'ones(2,1,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[1,1]],[[1,1]]]'), struct('a', ones(1,2,2))), 'ones(1,2,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[1,1],[1,1]],[[1,1],[1,1]]]'), struct('a', ones(2,2,2))), 'ones(2,2,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[[1]]],[[[1]]]]'), struct('a', ones(1,1,1,2))), 'ones(1,1,1,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[[1],[1]]],[[[1],[1]]]]'), struct('a', ones(2,1,1,2))), 'ones(2,1,1,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[[1,1]]],[[[1,1]]]]'), struct('a', ones(1,2,1,2))), 'ones(1,2,1,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[[1]],[[1]]],[[[1]],[[1]]]]'), struct('a', ones(1,1,2,2))), 'ones(1,1,2,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[[1],[1]],[[1],[1]]],[[[1],[1]],[[1],[1]]]]'), struct('a', ones(2,1,2,2))), 'ones(2,1,2,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[[1,1]],[[1,1]]],[[[1,1]],[[1,1]]]]'), struct('a', ones(1,2,2,2))), 'ones(1,2,2,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[[1,1],[1,1]],[[1,1],[1,1]]],[[[1,1],[1,1]],[[1,1],[1,1]]]]'), struct('a', ones(2,2,2,2))), 'ones(2,2,2,2) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[[1,2],[3,4]],[[5,6],[7,8]]],[[[9,10],[11,12]],[[13,14],[15,16]]]]'), struct('a', permute(reshape([1:16],2,2,2,2),[2,1,3,4]))), 'permute(reshape([1:16],2,2,2,2),[2,1,3,4]) not decoded correctly!');
+% assert(isequal(toml.decode('a = [[[[[1]]]],[[[[1]]]]]'), struct('a', ones(1,1,1,1,2))), 'ones(1,1,1,1,2) not decoded correctly!');
