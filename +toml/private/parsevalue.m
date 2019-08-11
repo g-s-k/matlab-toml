@@ -166,7 +166,7 @@ function val = parsevalue(str, force)
       % remove quotes
       val = trimmed_val(4:end-3);
       % remove leading newline
-      if val(1) == sprintf('\n')
+      if val(1) == newline
         val = val(2:end);
       end
       % trim whitespace for backslashes
@@ -219,7 +219,7 @@ function val = parsevalue(str, force)
       % remove quotes
       val = trimmed_val(4:end-3);
       % remove leading newline
-      if val(1) == sprintf('\n')
+      if val(1) == newline
         val = val(2:end);
       end
 
@@ -254,7 +254,7 @@ function val = parsevalue(str, force)
     beginning_brackets = strjoin(split(beginning_brackets), '');
     closing_brackets = regexp(trimmed_val, '[^0-9a-zA-Z"]*\s*\]+$', 'match');
     if isempty(closing_brackets), closing_brackets = ''; end
-    closing_brackets = strjoin(split(closing_brackets), '');
+    closing_brackets = strjoin(split(closing_brackets), ''); %#ok<NASGU>
 
     % get all opening and closing brackets
     num_opening_brackets = sum(ismember(strjoin(...

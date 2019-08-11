@@ -39,7 +39,7 @@ function obj_out = decode(toml_str)
         % if it already exists, append
         try
           existing_val = get_nested_field(obj_out, location_stack);
-          location_stack{end + 1} = length(existing_val) + 1;
+          location_stack{end + 1} = length(existing_val) + 1; %#ok<*AGROW>
           obj_out = set_nested_field(obj_out, location_stack, struct());
         % if not, pre-populate
         catch
