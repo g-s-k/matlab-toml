@@ -284,10 +284,10 @@ function val = parsevalue(str, force)
     % split array while respecting nesting
     val = splitby(val, ',', {'{}', '[]', '"', ''''});
     val = cellfun(@strtrim, val, 'uniformoutput', false);
+    val = val(~cellfun(@isempty, val));
     row_count = sum(cellfun(@(x) isequal(x(1), '[') && ...
       isequal(x(end), ']'), val));
     if row_count == 0, row_count = 1; end
-    val = val(~cellfun(@isempty, val));
     val = cellfun(@parsevalue, val, 'uniformoutput', false);
     val = reshape(val, row_count, []);
     % check homogeneity
