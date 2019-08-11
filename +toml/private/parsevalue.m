@@ -302,7 +302,7 @@ function val = parsevalue(str, force)
       val = reshape(val, row_count, []);
       % check if numeric cells have the same number of columns per row
       cell_sizes = cell2mat(cellfun(@size, val, 'UniformOutput', false));
-      if numel(unique(cell_sizes(:, 1))) == 1 && numel(unique(cell_sizes(:, 2))) == 1 && numel(val) > 1
+      if numel(unique(cell_sizes(:, 1))) == 1 && numel(unique(cell_sizes(:, 2))) == 1
         % apply dimensions to fully numeric array
         if max_dimension == 2
           max_dimension = 1;
