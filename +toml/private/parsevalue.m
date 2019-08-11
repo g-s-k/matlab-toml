@@ -200,8 +200,8 @@ function val = parsevalue(str, force)
             ['Invalid escape sequence: \', invalid_esc{:}, ...
             '\nFound in this value: ', strrep(str, '\', '\\')])
     end
-    % unicode points (only 4 digit max hex codes are supported)
-    ucode_match = '(?<!\\)\\(u[A-Fa-f0-9]{1,4}|U[A-Fa-f0-9]{1,4})';
+    % unicode points (only 4 digit hex codes will work in MATLAB)
+    ucode_match = '(?<!\\)\\(u[A-Fa-f0-9]{1,4}|U[A-Fa-f0-9]{1,8})';
     ucode_replace = '${char(hex2dec($1(2:end)))}';
     val = regexprep(val, ucode_match, ucode_replace);
     % escaped characters
