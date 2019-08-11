@@ -289,7 +289,7 @@ function val = parsevalue(str, force)
       isequal(x(end), ']'), val));
     if row_count == 0, row_count = 1; end
     val = cellfun(@parsevalue, val, 'uniformoutput', false);
-    val = reshape(val, row_count, []);
+
     % check homogeneity
     contained_types = cellfun(@class, val, 'uniformoutput', false);
     contained_sizes = cellfun(@numel, val);
@@ -299,6 +299,7 @@ function val = parsevalue(str, force)
       error('toml:HeterogeneousArray', ...
             'All elements of a TOML array must be the same type.')
     elseif all(cellfun(@isnumeric, val))
+      val = reshape(val, row_count, []);
       % check if numeric cells have the same number of columns per row
       cell_sizes = cell2mat(cellfun(@size, val, 'UniformOutput', false));
       if numel(unique(cell_sizes(:, 1))) == 1 && numel(unique(cell_sizes(:, 2))) == 1 && numel(val) > 1
