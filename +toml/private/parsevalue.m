@@ -249,7 +249,7 @@ function val = parsevalue(str, force)
   % is it an array?
   if trimmed_val(1) == '['
     % get starting and ending brackets
-    beginning_brackets = regexp(trimmed_val, '^\s*\[+[^0-9a-zA-Z"]*', 'match');
+    beginning_brackets = regexp(trimmed_val, '^\s*\[+[^0-9a-zA-Z"-]*', 'match');
     if isempty(beginning_brackets), beginning_brackets = ''; end
     beginning_brackets = strjoin(split(beginning_brackets), '');
     closing_brackets = regexp(trimmed_val, '[^0-9a-zA-Z"]*\s*\]+$', 'match');
