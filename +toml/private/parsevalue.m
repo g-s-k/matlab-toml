@@ -166,7 +166,7 @@ function val = parsevalue(str, force)
       % remove quotes
       val = trimmed_val(4:end-3);
       % remove leading newline
-      if val(1) == sprintf('\n')
+      if val(1) == newline
         val = val(2:end);
       end
       % trim whitespace for backslashes
@@ -182,39 +182,44 @@ function val = parsevalue(str, force)
       error('toml:IncompleteString', ...
             'String without closing quote: %s', trimmed_val)
     else
-      val = '';
+      % is it complete but empty?
+      if isequal(trimmed_val, '""')
+        % set to self so caller doesn't find it empty
+        val = '""';
+      else
+        val = '';
+      end
       return
     end
 
     % common post-processing
     % catch invalid escapes
-    invalid_esc = regexp(val, '\\[^btnfr"\\uU]', 'match');
+    invalid_esc = regexp(val, '(?<!\\)\\(\\\\)*([^btnfr"\\uU])', 'match');
     if ~isempty(invalid_esc)
       error('toml:InvalidEscapeSequence', ...
-            ['Invalid escape sequence: \', invalid_esc{:}])
+            ['Invalid escape sequence: \', invalid_esc{:}, ...
+            '\nFound in this value: ', strrep(str, '\', '\\')])
     end
-    % escaped quotes
-    val = strrep(val, '\"', '"');
-    % escaped characters
-    val = regexprep(val, '(\\[btnfr\\])', '${sprintf($1)}');
-    % unicode points
-    ucode_match = '\\(u[A-Fa-f0-9]{4}|U[A-Fa-f0-9]{8})';
+    % unicode points (only 4 digit hex codes will work in MATLAB)
+    ucode_match = '(?<!\\)\\(u[A-Fa-f0-9]{1,4}|U[A-Fa-f0-9]{1,8})';
     ucode_replace = '${char(hex2dec($1(2:end)))}';
     val = regexprep(val, ucode_match, ucode_replace);
-
+    % escaped characters
+    val = regexprep(val, '(\\[btnfr"\\])', '${sprintf($1)}');
     return
   end
 
   % literal strings
   if trimmed_val(1) == ''''
     % is it multiline and complete?
-    if isequal(trimmed_val(1:3), '''''''') && ...
+    if numel(trimmed_val) > 2 && ...
+       isequal(trimmed_val(1:3), '''''''') && ...
        numel(trimmed_val) > 3 && ...
        isequal(trimmed_val(end-2:end), '''''''')
       % remove quotes
       val = trimmed_val(4:end-3);
       % remove leading newline
-      if val(1) == sprintf('\n')
+      if val(1) == newline
         val = val(2:end);
       end
 
@@ -226,28 +231,49 @@ function val = parsevalue(str, force)
     % newline in string, tell caller the value is incomplete
     elseif force
       error('toml:IncompleteString', ...
-            'String without closing quote: %s', trimmed_val)
+        'String without closing quote: %s', trimmed_val)
     else
-      val = '';
+      % is it complete but empty?
+      if isequal(trimmed_val, '''''')
+        % set to self so caller doesn't find it empty
+        val = '''''';
+      else
+        val = '';
+      end
     end
 
     return
   end
 
 %% arrays
-
+  % is it an array?
   if trimmed_val(1) == '['
+    % get starting and ending brackets
+    beginning_brackets = regexp(trimmed_val, '^\s*\[+[^0-9a-zA-Z"-]*', 'match');
+    if isempty(beginning_brackets), beginning_brackets = ''; end
+    beginning_brackets = strjoin(split(beginning_brackets), '');
+    closing_brackets = regexp(trimmed_val, '[^0-9a-zA-Z"]*\s*\]+$', 'match');
+    if isempty(closing_brackets), closing_brackets = ''; end
+    closing_brackets = strjoin(split(closing_brackets), ''); %#ok<NASGU>
+
+    % get all opening and closing brackets
+    num_opening_brackets = sum(ismember(strjoin(...
+      regexp(trimmed_val, '\s*\[+[^0-9a-zA-Z"]*', 'match'), ''), '['));
+    num_closing_brackets = sum(ismember(strjoin(...
+      regexp(trimmed_val, '\s*\]+[^0-9a-zA-Z"]*', 'match'), ''), ']'));
+    
     % is it all here yet?
-    if trimmed_val(end) ~= ']'
+    if isequal(num_opening_brackets, num_closing_brackets)
+      % remove outer brackets
+      val = trimmed_val(2:end-1);
+      max_dimension = max(size(beginning_brackets));
+    else
       if force
         error('toml:IncompleteArray', ...
-              'Array without closing bracket: %s', trimmed_val)
+          'Array without closing bracket: %s', trimmed_val)
       end
       val = [];
       return
-    % remove outer brackets
-    else
-      val = trimmed_val(2:end-1);
     end
 
     if isempty(val)
@@ -257,10 +283,13 @@ function val = parsevalue(str, force)
 
     % split array while respecting nesting
     val = splitby(val, ',', {'{}', '[]', '"', ''''});
-
     val = cellfun(@strtrim, val, 'uniformoutput', false);
     val = val(~cellfun(@isempty, val));
+    row_count = sum(cellfun(@(x) isequal(x(1), '[') && ...
+      isequal(x(end), ']'), val));
+    if row_count == 0, row_count = 1; end
     val = cellfun(@parsevalue, val, 'uniformoutput', false);
+
     % check homogeneity
     contained_types = cellfun(@class, val, 'uniformoutput', false);
     contained_sizes = cellfun(@numel, val);
@@ -270,7 +299,18 @@ function val = parsevalue(str, force)
       error('toml:HeterogeneousArray', ...
             'All elements of a TOML array must be the same type.')
     elseif all(cellfun(@isnumeric, val))
-      val = cell2mat(val);
+      val = reshape(val, row_count, []);
+      % check if numeric cells have the same number of columns per row
+      cell_sizes = cell2mat(cellfun(@size, val, 'UniformOutput', false));
+      if numel(unique(cell_sizes(:, 1))) == 1 && numel(unique(cell_sizes(:, 2))) == 1
+        % apply dimensions to fully numeric array
+        if max_dimension == 2
+          max_dimension = 1;
+        elseif max_dimension == 1
+          max_dimension = 2;
+        end
+        val = cat(max_dimension, val{:});
+      end
     end
 
     return

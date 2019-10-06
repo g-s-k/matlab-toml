@@ -39,7 +39,7 @@ function obj_out = decode(toml_str)
         % if it already exists, append
         try
           existing_val = get_nested_field(obj_out, location_stack);
-          location_stack{end + 1} = length(existing_val) + 1;
+          location_stack{end + 1} = length(existing_val) + 1; %#ok<*AGROW>
           obj_out = set_nested_field(obj_out, location_stack, struct());
         % if not, pre-populate
         catch
@@ -58,6 +58,7 @@ function obj_out = decode(toml_str)
     force = false;
     while true
       value_fix = parsevalue(value, force);
+      % loop for possible multiline values
       if isempty(value_fix) && ~iscell(value_fix)
         if current_line < length(toml_nonempty)
           current_line = current_line + 1;
@@ -66,6 +67,11 @@ function obj_out = decode(toml_str)
           force = true;
         end
       else
+        % convert closed but empty string values to empty char
+        if numel(value_fix) == 2 && ...
+            (isequal(value_fix, '""') || isequal(value_fix, ''''''))
+          value_fix = '';
+        end
         break
       end
     end

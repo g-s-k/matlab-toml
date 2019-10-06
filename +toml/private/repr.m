@@ -15,6 +15,17 @@ function str = repr(obj, parent)
     % strings
     case 'char'
       if isrow(obj) || isempty(obj)
+        % escape characters
+        esc_char = {'\\', '\b', '\t', '\n', '\f', '\r', '\"'};
+        for ii = 1:length(esc_char)
+          obj = strrep(obj, sprintf(esc_char{ii}), esc_char{ii});
+        end
+        % convert chars above \x052f to escaped unicode \u
+        unicode_chars = find(double(obj) > hex2dec('52F'));
+        for jj = unicode_chars
+          obj = strrep(obj, obj(jj), sprintf('\\u%04s', dec2hex(double(obj(jj)))));
+        end
+        % wrap in basic string double quotes
         str = ['"', obj, '"'];
       else
         str = repr(reshape(cellstr(obj), 1, []));
@@ -30,8 +41,7 @@ function str = repr(obj, parent)
       if numel(obj) == 1
         str = lower(num2str(obj));
       else
-        cel = arrayfun(@repr, obj, 'uniformoutput', false);
-        str = ['[', strjoin(cel, ', '), ']'];
+        str = bracketarray(obj);
       end
 
     % cell arrays
@@ -47,6 +57,7 @@ function str = repr(obj, parent)
 
     % structures
     case 'struct'
+      obj = sortfields(obj);
       fn = fieldnames(obj);
       vals = struct2cell(obj);
       str = '';
