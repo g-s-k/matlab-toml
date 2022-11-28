@@ -60,19 +60,21 @@ function str = repr(obj, parent)
       str = '';
       for indx = 1:numel(vals)
         new_parent = fn{indx};
+        current_item_repr = repr(vals{indx}, new_parent);
         if isstruct(vals{indx})
           if nargin > 1
-            fmt_str = ['%1$s[', parent, '.%2$s]%4$s%3$s'];
+            fmt_str = ['[', parent, '.%s]%s%s'];
+            item = sprintf(fmt_str, fn{indx}, newline, current_item_repr);
             new_parent = [parent, '.', fn{indx}];
           else
-            fmt_str = '%1$s[%2$s]%4$s%3$s';
+            item = sprintf("[%s]%s%s", fn{indx}, newline, current_item_repr);
           end
         elseif iscell(vals{indx}) && all(cellfun(@isstruct, vals{indx}))
-          fmt_str = '%1$s%3$s%4$s';
+          item = current_item_repr;
         else
-          fmt_str = '%1$s%2$s = %3$s%4$s';
+          item = sprintf("%s = %s", fn{indx}, current_item_repr);
         end
-        str = sprintf(fmt_str, str, fn{indx}, repr(vals{indx}, new_parent), newline);
+        str = sprintf("%s%s%s", str, item, newline);
       end
 
     % datetime objects
