@@ -29,8 +29,16 @@ function str = repr(obj, parent)
     case 'double'
       if numel(obj) == 1
         str = lower(num2str(obj));
-      else
+      elseif ndims(obj) == 2 && size(obj, 1) == 1
         cel = arrayfun(@repr, obj, 'uniformoutput', false);
+        str = ['[', strjoin(cel, ', '), ']'];
+      else
+        cel = cell(1, size(obj, 1));
+        indices = repmat({':'}, 1, ndims(obj));
+        for row = 1:size(obj, 1)
+          indices{1} = row;
+          cel{row} = repr(squeeze(obj(indices{:})));
+        end
         str = ['[', strjoin(cel, ', '), ']'];
       end
 
