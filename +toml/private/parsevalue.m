@@ -19,6 +19,11 @@
 function val = parsevalue(str, force)
 %% check for noncompletion
   if isempty(str)
+    if force
+      error('toml:EmptyValue', ...
+            'Key must be associated with a value.')
+    end
+
     val = '';
     return
   end
@@ -250,7 +255,7 @@ function val = parsevalue(str, force)
       val = trimmed_val(2:end-1);
     end
 
-    if isempty(val)
+    if isempty(strtrim(val))
       val = {};
       return
     end
