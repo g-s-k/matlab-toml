@@ -274,7 +274,7 @@ function val = parsevalue(str, force)
     if numel(unique(contained_types)) > 1
       error('toml:HeterogeneousArray', ...
             'All elements of a TOML array must be the same type.')
-    elseif all(cellfun(@isnumeric, val))
+    elseif all(cellfun(@(el) isnumeric(el) && isscalar(el), val))
       val = cell2mat(val);
     end
 
