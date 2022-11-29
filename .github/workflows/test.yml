@@ -1,6 +1,6 @@
 name: Test
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   test:
@@ -9,3 +9,8 @@ jobs:
     - uses: actions/checkout@v3
     - uses: matlab-actions/setup-matlab@v1
     - uses: matlab-actions/run-tests@v1
+    - run: |
+        curl https://github.com/BurntSushi/toml-test/releases/download/v1.2.0/toml-test-v1.2.0-linux-amd64.gz -Lo - |\
+        gunzip > toml-test &&\
+        chmod +x toml-test
+    - run: ./toml-test -- /home/runner/work/_actions/matlab-actions/run-tests/v1/dist/bin/glnxa64/run-matlab-command test/decoder.m
