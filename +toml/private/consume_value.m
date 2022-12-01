@@ -94,8 +94,18 @@ function [val, str] = consume_value(str)
     % date
     if numel(digits) == 4 && startsWith(str, '-')
       [month, str] = consume_integer(str(2:end), 10);
+  
+      if numel(month) ~= 2 || month(1) > '1' || (month(1) == '1' && month(2) > '2') || month == '00'
+        error('toml:InvalidMonth', 'Invalid month in date object.');
+      end
+
       str = expect(str, '-');
       [day, str] = consume_integer(str, 10);
+  
+      if numel(day) ~= 2 || day(1) > '3' || (day(1) == '3' && day(2) > '1') || day == '00'
+        error('toml:InvalidDay', 'Invalid day in date object.');
+      end
+
       val = [digits '-' month '-' day];
       
       if startsWith(str, 'T') || startsWith(str, 't') || ...
@@ -121,6 +131,11 @@ function [val, str] = consume_value(str)
 
     % number
     else
+      if startsWith(digits, '0') && numel(digits) > 1
+        error('toml:LeadingZero', ...
+          'Encountered a numeric literal with a leading zero.');
+      end
+
       has_fractional = false;
       has_exponent = false;
 
@@ -217,11 +232,24 @@ function [val, str] = consume_time(str, hour)
   if nargin < 2
     [hour, str] = consume_integer(str, 10);
   end
+  
+  if numel(hour) ~= 2 || hour(1) > '2' || (hour(1) == '2' && hour(2) > '3')
+    error('toml:InvalidHour', 'Invalid hour in time object.');
+  end
 
   str = expect(str, ':');
   [minute, str] = consume_integer(str, 10);
+
+  if numel(minute) ~= 2 || minute(1) > '5'
+    error('toml:InvalidMinute', 'Invalid minute in time object.');
+  end
+
   str = expect(str, ':');
   [second, str] = consume_integer(str, 10);
+  
+  if numel(second) ~= 2 || second(1) > '6' || (second(1) == '6' && second(2) > '0')
+    error('toml:InvalidSecond', 'Invalid second in time object.');
+  end
 
   val = [hour ':' minute ':' second];
   

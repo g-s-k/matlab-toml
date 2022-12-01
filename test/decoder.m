@@ -68,6 +68,7 @@ function str = escape_str(str)
 	str = strrep(str, "\n", '\n');
 	str = strrep(str, "\t", '\t');
 	str = strrep(str, "\b", '\b');
+	str = strrep(str, char(0x1f), '\u001F');
 end
 
 data = char(fread(0)).';

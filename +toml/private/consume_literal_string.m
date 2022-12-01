@@ -6,29 +6,43 @@ function [val, str] = consume_literal_string(str, allow_multiline)
   val = [];
   if allow_multiline && startsWith(str, "'''")
     str = str(4:end);
-    while startsWith(str, newline)
+    if startsWith(str, "\n")
       str = str(2:end);
+    elseif startsWith(str, "\r\n")
+      str = str(3:end);
     end
-    [val, str] = terminate_string(str, "'''");
+    [val, str] = terminate_string(str, true);
 
   elseif startsWith(str, "'")
     str = str(2:end);
-    [val, str] = terminate_string(str, "'");
+    [val, str] = terminate_string(str, false);
   end
 end
 
-function [content, rest] = terminate_string(str, delim)
+function [content, rest] = terminate_string(str, is_multiline)
   for idx = 1:numel(str)
     c = str(idx);
 
-    if startsWith(str(idx:end), delim)
+    if is_multiline && startsWith(str(idx:end), "'''")
+      if startsWith(str(idx:end), "'''''")
+        content_end = idx + 1;
+      elseif startsWith(str(idx:end), "''''")
+        content_end = idx;
+      else
+        content_end = idx - 1;
+      end
+      content = str(1:content_end);
+      rest = str(content_end+4:end);
+      return
+
+    elseif ~is_multiline && str(idx) == "'"
       content = str(1:idx-1);
-      rest = str(idx+numel(delim):end);
+      rest = str(idx+1:end);
       return
 
     elseif c == 9
       % tab is okay
-    elseif c == 10 && numel(delim) > 1
+    elseif c == 10 && is_multiline
       % line feeds are ok in multiline strings
     elseif c <= 31 || c == 127
       error('toml:ControlCharInString', ...

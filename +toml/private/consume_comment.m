@@ -5,12 +5,11 @@ function out = consume_comment(in)
     out = out(2:end);
 
     if ~isempty(out)
-      comment_end = numel(out);
-      for idx = 1:comment_end
+      for idx = 1:numel(out)
         c = out(idx);
-        if c == newline || (c == "\r" && idx < comment_end && out(idx+1) == newline)
-          comment_end = idx;
-          break
+        if c == newline || (c == "\r" && idx < numel(out) && out(idx+1) == newline)
+          out = trimstart(out(idx:end), true);
+          return
         elseif c == 9
           % tabs are okay
         elseif c <= 31 || c == 127
@@ -19,7 +18,7 @@ function out = consume_comment(in)
         end
       end
 
-      out = trimstart(out(comment_end:end), true);
+      out = '';
     end
   end
 end
