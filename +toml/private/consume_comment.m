@@ -8,7 +8,7 @@ function out = consume_comment(in)
       comment_end = numel(out);
       for idx = 1:comment_end
         c = out(idx);
-        if c == newline
+        if c == newline || (c == "\r" && idx < comment_end && out(idx+1) == newline)
           comment_end = idx;
           break
         elseif c == 9

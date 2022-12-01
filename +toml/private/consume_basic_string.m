@@ -45,7 +45,24 @@ function [content, rest] = terminate_string(str, delim)
     elseif c == '\'
       escaping = ~escaping;
     else
-      escaping = false;
+      switch c
+        case { 'b', 't', 'n', 'f', 'r', 'u', '"', '\' }
+          escaping = false;
+        case { ' ', "\t", "\r", "\n" }
+          if numel(delim) == 1
+            if escaping
+              error('toml:ReservedEscapeSequence', ...
+                'Encountered reserved escape sequence in string.');
+            end
+          else
+            escaping = false;
+          end
+        otherwise
+          if escaping
+            error('toml:ReservedEscapeSequence', ...
+              ['Encountered reserved escape sequence `\\' c '` in string.']);
+          end
+      end
     end
   end
 
