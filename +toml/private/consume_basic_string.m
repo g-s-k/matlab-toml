@@ -46,7 +46,7 @@ function [content, rest] = terminate_string(str, delim)
       escaping = ~escaping;
     else
       switch c
-        case { 'b', 't', 'n', 'f', 'r', 'u', '"', '\' }
+        case { 'b', 't', 'n', 'f', 'r', 'u', 'U', '"', '\' }
           escaping = false;
         case { ' ', "\t", "\r", "\n" }
           if numel(delim) == 1
