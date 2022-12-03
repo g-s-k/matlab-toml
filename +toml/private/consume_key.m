@@ -1,8 +1,11 @@
-function [keys, str] = consume_key(str, next_token)
+function [keys, str] = consume_key(str, next_token, prefix)
   keys = {};
 
   while true
     [key, str] = consume_single_key(str);
+    if ~isempty(prefix)
+      key = matlab.lang.makeValidName(key, "Prefix", prefix);
+    end
     keys{end+1} = key;
     str = trimstart(str);
 

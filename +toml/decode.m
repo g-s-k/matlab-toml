@@ -4,11 +4,21 @@
 %   TOML-formatted data in `toml_str`. If it is invalid TOML, an
 %   appropriate exception will be raised.
 %
+%  DECODE(toml_str, key_prefix) allows you to customize the prefix
+%  prepended to keys that are invalid item names in MATLAB. The
+%  default value is "toml__".
+%
 %   See also TOML.READ
 
-function obj_out = decode(toml_str)
+function obj_out = decode(toml_str, invalid_key_prefix)
+  if nargin < 2
+    invalid_key_prefix = "toml__";
+  end
+
   obj_out = struct();
   location_stack = {};
+  array_locations = {};
+  immutable_locations = {};
 
   while true
     toml_str = consume_comment(toml_str);
@@ -18,22 +28,34 @@ function obj_out = decode(toml_str)
 
     if startsWith(toml_str, '[[') % array
       toml_str = toml_str(3:end);
-      [location_stack, toml_str] = consume_key(toml_str, ']]');
+      [location_stack, toml_str] = consume_key(toml_str, ']]', invalid_key_prefix);
       location_stack = adjust_key_stack(obj_out, location_stack);
-      [obj_out, location_stack] = create_nested_field(obj_out, location_stack, {struct()});
+      check_stack_for_conflict(immutable_locations, location_stack);
+      try
+        existing_val = get_nested_field(obj_out, location_stack);
+        location_stack{end+1} = length(existing_val) + 1;
+        obj_out = set_nested_field(obj_out, location_stack, struct());
+      catch e
+        array_locations{end+1} = location_stack;
+        location_stack{end+1} = 1;
+        obj_out = set_nested_field(obj_out, location_stack, struct());
+      end
       toml_str = expect_line_break_or_comment_or_eof(toml_str);
 
     elseif startsWith(toml_str, '[') % table
       toml_str = toml_str(2:end);
-      [location_stack, toml_str] = consume_key(toml_str, ']');
+      [location_stack, toml_str] = consume_key(toml_str, ']', invalid_key_prefix);
       location_stack = adjust_key_stack(obj_out, location_stack);
-      [obj_out, location_stack] = create_nested_field(obj_out, location_stack, struct());
+      check_stack_for_conflict(immutable_locations, location_stack);
+      check_stack_for_array(array_locations, location_stack);
+      obj_out = set_nested_field(obj_out, location_stack, struct());
       toml_str = expect_line_break_or_comment_or_eof(toml_str);
 
     elseif startsWith(toml_str, '"') || startsWith(toml_str, "'") || is_key_char(toml_str(1)) % key / value pair
-      [key_seq, toml_str] = consume_key(toml_str, '=');
-      [value_fix, toml_str] = consume_value(toml_str);
+      [key_seq, toml_str] = consume_key(toml_str, '=', invalid_key_prefix);
+      [value_fix, toml_str] = consume_value(toml_str, invalid_key_prefix);
       obj_out = set_nested_field(obj_out, [location_stack, key_seq], value_fix);
+      immutable_locations{end+1} = [location_stack, key_seq];
       toml_str = expect_line_break_or_comment_or_eof(toml_str);
       
     elseif ~startsWith(toml_str, '#')
@@ -43,20 +65,22 @@ function obj_out = decode(toml_str)
   end
 end
 
-function [obj, location_stack] = create_nested_field(obj, location_stack, item)
-  try
-    existing_val = get_nested_field(obj, location_stack);
-
-    if iscell(item)
-      location_stack{end + 1} = length(existing_val) + 1;
-      obj = set_nested_field(obj, location_stack, struct());
+function check_stack_for_conflict(stacks, current)
+  for idx = 1:numel(stacks)
+    for depth = 1:numel(current)
+      if isequal(stacks{idx}, current(1:depth))
+        error('toml:NameCollision', ...
+          ['Assigning to existing location `' strjoin(cellfun(@num2str, current, 'uniformoutput', false), '.') '`']);
+      end
     end
+  end
+end
 
-  catch
-    obj = set_nested_field(obj, location_stack, item);
-
-    if iscell(item)
-      location_stack{end + 1} = 1;
+function check_stack_for_array(stacks, current)
+  for idx = 1:numel(stacks)
+    if isequal(stacks{idx}, current)
+      error('toml:NameCollision', ...
+        ['Assigning to existing location `' strjoin(cellfun(@num2str, current, 'uniformoutput', false), '.') '`']);
     end
   end
 end

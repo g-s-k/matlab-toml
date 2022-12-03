@@ -6,9 +6,9 @@ function [val, str] = consume_literal_string(str, allow_multiline)
   val = [];
   if allow_multiline && startsWith(str, "'''")
     str = str(4:end);
-    if startsWith(str, "\n")
+    if startsWith(str, newline)
       str = str(2:end);
-    elseif startsWith(str, "\r\n")
+    elseif startsWith(str, [char(0xD) newline])
       str = str(3:end);
     end
     [val, str] = terminate_string(str, true);

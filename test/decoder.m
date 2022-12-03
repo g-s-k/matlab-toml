@@ -72,5 +72,5 @@ function str = escape_str(str)
 end
 
 data = char(fread(0)).';
-decoded = toml.decode(data);
+decoded = toml.decode(data, '');
 printf("%s\n", jsonify(decoded));

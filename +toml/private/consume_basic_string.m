@@ -9,7 +9,7 @@ function [val, str] = consume_basic_string(str, allow_multiline)
     while true
       if startsWith(str, newline)
         str = str(2:end);
-      elseif startsWith(str, "\r\n")
+      elseif startsWith(str, [char(0xD) newline])
         str = str(3:end);
       else
         break
@@ -57,7 +57,7 @@ function [content, str] = terminate_string(str, is_multiline)
             pieces{end+1} = char(hex2dec(code_point));
           otherwise
             error('toml:ReservedEscapeSequence', ...
-              ['Encountered reserved escape sequence `\', c, '` in string.']);
+              ['Encountered reserved escape sequence `\\', c, '` in string.']);
         end
       end
     elseif is_multiline && startsWith(str, '"""')
@@ -74,7 +74,7 @@ function [content, str] = terminate_string(str, is_multiline)
     elseif ~is_multiline && startsWith(str, '"')
       str = str(2:end);
       break
-    elseif ~is_multiline && startsWith(str, "\n")
+    elseif ~is_multiline && startsWith(str, newline)
       error('toml:LineBreakInBasicString', ...
         'Encountered a line break in a single-line string.');
     elseif str(1) <= 8 || (str(1) >= 11 && str(1) <= 31) || str(1) == 127
@@ -92,7 +92,7 @@ end
 function are_there = any_non_whitespace_chars_before_newline(str)
   are_there = false;
   for idx = 1:numel(str)
-    if str(idx) == newline || startsWith(str(idx:end), "\r\n")
+    if str(idx) == newline || startsWith(str(idx:end), [char(0xD) newline])
       return
     elseif ~isspace(str(idx))
       are_there = true;

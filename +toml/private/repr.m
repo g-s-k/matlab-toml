@@ -26,7 +26,7 @@ function str = repr(obj, parent)
       str = reprs{obj + 1};
 
     % numbers
-    case 'double'
+    case { 'double', 'int64' }
       if numel(obj) == 1
         str = lower(num2str(obj));
       elseif ndims(obj) == 2 && size(obj, 1) == 1

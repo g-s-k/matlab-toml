@@ -1,4 +1,4 @@
-function [val, str] = consume_value(str)
+function [val, str] = consume_value(str, invalid_key_prefix)
   str = trimstart(str);
   
   if isempty(str)
@@ -23,15 +23,23 @@ function [val, str] = consume_value(str)
 
       str = trimstart(str, true);
       if startsWith(str, ']')
-        str = str(2:end);
         break
       end
       
       if ~startsWith(str, '#')
-        [item, str] = consume_value(str);
+        [item, str] = consume_value(str, invalid_key_prefix);
         val{end+1} = item;
         first = false;
       end
+    end
+
+    str = expect(str, ']');
+    
+    if numel(val) > 1 && ...
+      (all(cellfun(@(e) isa(e, 'int64'), val)) || ...
+        all(cellfun(@(e) isa(e, 'uint64'), val)) || ...
+        all(cellfun(@(e) isa(e, 'double'), val)))
+      val = cell2mat(val);
     end
     
   elseif startsWith(str, '{')
@@ -41,17 +49,17 @@ function [val, str] = consume_value(str)
     while ~isempty(str)
       str = trimstart(str);
       if startsWith(str, '}')
-        str = str(2:end);
         break
       end
       if ~first
         str = expect(str, ',');
       end
-      [key_seq, str] = consume_key(str, '=');
-      [item, str] = consume_value(str);
+      [key_seq, str] = consume_key(str, '=', invalid_key_prefix);
+      [item, str] = consume_value(str, invalid_key_prefix);
       val = set_nested_field(val, key_seq, item);
       first = false;
     end
+    str = expect(str, '}');
 
   elseif startsWith(str, 'true')
     val = true;
@@ -66,9 +74,9 @@ function [val, str] = consume_value(str)
     [val, str] = consume_basic_string(str, true);
 
   elseif startsWith(str, '+')
-    [val, str] = consume_signed_value(str(2:end));
+    [val, str] = consume_signed_value(str(2:end), invalid_key_prefix);
   elseif startsWith(str, '-')
-    [val, str] = consume_signed_value(str(2:end));
+    [val, str] = consume_signed_value(str(2:end), invalid_key_prefix);
     val = -val;
     
   elseif startsWith(str, "inf")
@@ -95,14 +103,14 @@ function [val, str] = consume_value(str)
     if numel(digits) == 4 && startsWith(str, '-')
       [month, str] = consume_integer(str(2:end), 10);
   
-      if numel(month) ~= 2 || month(1) > '1' || (month(1) == '1' && month(2) > '2') || month == '00'
+      if numel(month) ~= 2 || month(1) > '1' || (month(1) == '1' && month(2) > '2') || all(month == '00')
         error('toml:InvalidMonth', 'Invalid month in date object.');
       end
 
       str = expect(str, '-');
       [day, str] = consume_integer(str, 10);
   
-      if numel(day) ~= 2 || day(1) > '3' || (day(1) == '3' && day(2) > '1') || day == '00'
+      if numel(day) ~= 2 || day(1) > '3' || (day(1) == '3' && day(2) > '1') || all(day == '00')
         error('toml:InvalidDay', 'Invalid day in date object.');
       end
 
@@ -179,7 +187,7 @@ function [val, str] = consume_value(str)
   end
 end
 
-function [num, str] = consume_signed_value(str)
+function [num, str] = consume_signed_value(str, invalid_key_prefix)
   if startsWith(str, '0b') || startsWith(str, '0o') || startsWith(str, '0x')
     error('toml:SignOnNonBase10', ...
       'Encountered a plus/minus sign on an unsigned int value.');
@@ -187,7 +195,7 @@ function [num, str] = consume_signed_value(str)
     error('toml:MultipleSigns', ...
       'Encountered multiple plus/minus signs in a row.');
   end
-  [num, str] = consume_value(str);
+  [num, str] = consume_value(str, invalid_key_prefix);
   if ~isnumeric(num)
     error('toml:InvalidSign', ...
       'Encountered a plus/minus sign on a non-numeric value.');
@@ -208,6 +216,11 @@ function [digits, str] = consume_integer(str, base)
 
   digits = str;
   for idx = 1:numel(str)
+    if startsWith(str(idx:end), '__')
+      error('toml:DoubleUnderscore', ...
+        'Double underscore encountered in numeric literal.');
+    end
+
     if ~c_valid(str(idx)) && str(idx) ~= '_'
       digits = str(1:idx-1);
       break
