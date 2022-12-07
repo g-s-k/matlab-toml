@@ -13,4 +13,7 @@ jobs:
         curl https://github.com/BurntSushi/toml-test/releases/download/v1.2.0/toml-test-v1.2.0-linux-amd64.gz -Lo - |\
         gunzip > toml-test &&\
         chmod +x toml-test
-    - run: ./toml-test -- /home/runner/work/_actions/matlab-actions/run-tests/v1/dist/bin/glnxa64/run-matlab-command test/decoder.m
+    - run: |
+        ./toml-test -run 'valid/*' -- \
+        /home/runner/work/_actions/matlab-actions/run-tests/v1/dist/bin/glnxa64/run-matlab-command \
+        'cd("/home/runner/work/matlab-toml/matlab-toml");run("test/decoder.m")'

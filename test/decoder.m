@@ -1,4 +1,10 @@
-addpath("+toml/private");
+if exist('OCTAVE_VERSION', 'builtin') > 0
+	addpath("+toml/private");
+end
+
+data = char(fread(0)).';
+decoded = toml.decode(data, '');
+printf("%s\n", jsonify(decoded));
 
 function str = jsonify(obj)
 	if isstruct(obj)
@@ -70,7 +76,3 @@ function str = escape_str(str)
 	str = strrep(str, "\b", '\b');
 	str = strrep(str, char(0x1f), '\u001F');
 end
-
-data = char(fread(0)).';
-decoded = toml.decode(data, '');
-printf("%s\n", jsonify(decoded));
