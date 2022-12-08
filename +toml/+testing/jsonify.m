@@ -1,20 +1,12 @@
-if exist('OCTAVE_VERSION', 'builtin') > 0
-	addpath("+toml/private");
-end
-
-data = char(fread(0)).';
-decoded = toml.decode(data, '');
-printf("%s\n", jsonify(decoded));
-
 function str = jsonify(obj)
 	if isstruct(obj)
 		keys = fieldnames(obj);
-		print_key_value = @(k) sprintf('"%s":%s', escape_str(k), jsonify(obj.(k)));
+		print_key_value = @(k) sprintf('"%s":%s', escape_str(k), toml.testing.jsonify(obj.(k)));
 		keys_and_values = cellfun(print_key_value, keys, 'uniformoutput', false);
 		str = ['{', strjoin(keys_and_values, ','), '}'];
 
 	elseif iscell(obj)
-		values = cellfun(@jsonify, obj, 'uniformoutput', false);
+		values = cellfun(@toml.testing.jsonify, obj, 'uniformoutput', false);
 		str = ['[', strjoin(values, ','), ']'];
 
 	elseif ischar(obj)
@@ -30,16 +22,16 @@ function str = jsonify(obj)
 			str = ['{"type":"string","value":"', escape_str(obj), '"}'];
 		end
 
-	elseif numel(obj) != 1 && ndims(obj) == 2 && size(obj, 1) == 1
-		values = arrayfun(@jsonify, obj, 'uniformoutput', false);
+	elseif numel(obj) ~= 1 && ndims(obj) == 2 && size(obj, 1) == 1
+		values = arrayfun(@toml.testing.jsonify, obj, 'uniformoutput', false);
 		str = ['[', strjoin(values, ','), ']'];
 
-	elseif numel(obj) != 1
+	elseif numel(obj) ~= 1
 	    cel = cell(1, size(obj, 1));
 	    indices = repmat({':'}, 1, ndims(obj));
 	    for row = 1:size(obj, 1)
 			indices{1} = row;
-			cel{row} = jsonify(squeeze(obj(indices{:})));
+			cel{row} = toml.testing.jsonify(squeeze(obj(indices{:})));
 	    end
 	    str = ['[', strjoin(cel, ', '), ']'];		
 
