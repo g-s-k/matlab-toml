@@ -1,8 +1,12 @@
 function str = jsonify(obj)
-	if isstruct(obj)
-		keys = fieldnames(obj);
+	if isa(obj, 'containers.Map')
+		print_key_value = @(k) sprintf('"%s":%s', escape_str(k), toml.testing.jsonify(obj(k)));
+		keys_and_values = cellfun(print_key_value, keys(obj), 'uniformoutput', false);
+		str = ['{', strjoin(keys_and_values, ','), '}'];
+
+	elseif isstruct(obj)
 		print_key_value = @(k) sprintf('"%s":%s', escape_str(k), toml.testing.jsonify(obj.(k)));
-		keys_and_values = cellfun(print_key_value, keys, 'uniformoutput', false);
+		keys_and_values = cellfun(print_key_value, fieldnames(obj), 'uniformoutput', false);
 		str = ['{', strjoin(keys_and_values, ','), '}'];
 
 	elseif iscell(obj)

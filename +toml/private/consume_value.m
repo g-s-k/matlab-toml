@@ -1,4 +1,4 @@
-function [val, str] = consume_value(str, invalid_key_prefix)
+function [val, str] = consume_value(str)
   str = trimstart(str);
   
   if isempty(str)
@@ -27,7 +27,7 @@ function [val, str] = consume_value(str, invalid_key_prefix)
       end
       
       if ~startsWith(str, '#')
-        [item, str] = consume_value(str, invalid_key_prefix);
+        [item, str] = consume_value(str);
         val{end+1} = item;
         first = false;
       end
@@ -44,7 +44,7 @@ function [val, str] = consume_value(str, invalid_key_prefix)
     
   elseif startsWith(str, '{')
     str = str(2:end);
-    val = struct();
+    val = containers.Map();
     first = true;
     while ~isempty(str)
       str = trimstart(str);
@@ -54,8 +54,8 @@ function [val, str] = consume_value(str, invalid_key_prefix)
       if ~first
         str = expect(str, ',');
       end
-      [key_seq, str] = consume_key(str, '=', invalid_key_prefix);
-      [item, str] = consume_value(str, invalid_key_prefix);
+      [key_seq, str] = consume_key(str, '=');
+      [item, str] = consume_value(str);
       val = set_nested_field(val, key_seq, item);
       first = false;
     end
@@ -74,9 +74,9 @@ function [val, str] = consume_value(str, invalid_key_prefix)
     [val, str] = consume_basic_string(str, true);
 
   elseif startsWith(str, '+')
-    [val, str] = consume_signed_value(str(2:end), invalid_key_prefix);
+    [val, str] = consume_signed_value(str(2:end));
   elseif startsWith(str, '-')
-    [val, str] = consume_signed_value(str(2:end), invalid_key_prefix);
+    [val, str] = consume_signed_value(str(2:end));
     val = -val;
     
   elseif startsWith(str, "inf")
@@ -187,7 +187,7 @@ function [val, str] = consume_value(str, invalid_key_prefix)
   end
 end
 
-function [num, str] = consume_signed_value(str, invalid_key_prefix)
+function [num, str] = consume_signed_value(str)
   if startsWith(str, '0b') || startsWith(str, '0o') || startsWith(str, '0x')
     error('toml:SignOnNonBase10', ...
       'Encountered a plus/minus sign on an unsigned int value.');
@@ -195,7 +195,7 @@ function [num, str] = consume_signed_value(str, invalid_key_prefix)
     error('toml:MultipleSigns', ...
       'Encountered multiple plus/minus signs in a row.');
   end
-  [num, str] = consume_value(str, invalid_key_prefix);
+  [num, str] = consume_value(str);
   if ~isnumeric(num)
     error('toml:InvalidSign', ...
       'Encountered a plus/minus sign on a non-numeric value.');

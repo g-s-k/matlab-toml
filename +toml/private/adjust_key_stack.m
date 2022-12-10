@@ -1,4 +1,4 @@
-% ADJUST_KEY_STACK fix inconsistencies in a pointer into a struct
+% ADJUST_KEY_STACK fix inconsistencies in a pointer into a Map
 %
 %   ADJUST_KEY_STACK(obj, key_stack) follows the elements of `key_stack`
 %   through the structure of `obj`. If an element is missing from the
@@ -15,13 +15,13 @@ function key_stack = adjust_key_stack(obj, key_stack)
           key_stack = [{length(obj)}, key_stack];
         end
         nested_obj = obj{key_stack{1}};
-      case 'struct'
+      case 'containers.Map'
         try
-          nested_obj = obj.(key_stack{1});
+          nested_obj = obj(key_stack{1});
         catch
           if numel(key_stack) > 1
             if ischar(key_stack{2})
-              nested_obj = struct();
+              nested_obj = containers.Map();
             else
               nested_obj = {};
             end

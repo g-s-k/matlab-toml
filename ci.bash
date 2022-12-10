@@ -8,6 +8,6 @@ OUT_FILE='./.output.toml'
 cat > $IN_FILE
 
 $MATLAB \
-	"addpath('.');if exist('OCTAVE_VERSION', 'builtin') > 0;addpath('./+toml/private');end;in=fopen('$IN_FILE','rt');data=char(fread(in)).';decoded=toml.decode(data);out=fopen('$OUT_FILE','wt');fprintf(out,'%s\n',toml.testing.jsonify(decoded));" > /dev/null
+	"addpath('.');if exist('OCTAVE_VERSION', 'builtin') > 0;addpath('./+toml/private');end;decoded=toml.read('$IN_FILE');out=fopen('$OUT_FILE','wt');fprintf(out,'%s\n',toml.testing.jsonify(decoded));" > /dev/null
 	
 cat $OUT_FILE

@@ -1,7 +1,7 @@
 % READ parse TOML data from a file
 %
 %   READ('file.toml') loads the contents of `file.toml` and parses
-%   that data into a MATLAB struct.
+%   that data into a MATLAB Map.
 %
 %   See also FILEREAD, TOML.DECODE
 

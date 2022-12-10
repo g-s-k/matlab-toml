@@ -44,13 +44,37 @@ function str = repr(obj, parent)
 
     % cell arrays
     case 'cell'
-      if all(cellfun(@isstruct, obj))
+      if all(cellfun(@isstruct, obj)) || all(cellfun(@(el) isa(el, 'containers.Map'), obj))
         fmtter = @(a) sprintf('[[%s]]%s%s', parent, newline, repr(a));
         cel_str = cellfun(fmtter, obj, 'uniformoutput', false);
         str = strjoin(cel_str, newline);
       else
         cel_mod = cellfun(@repr, obj, 'uniformoutput', false);
         str = ['[', strjoin(cel_mod, ', '), ']'];
+      end
+
+    % maps
+    case 'containers.Map'
+      fn = keys(obj);
+      vals = values(obj);
+      str = '';
+      for indx = 1:numel(vals)
+        new_parent = fn{indx};
+        current_item_repr = repr(vals{indx}, new_parent);
+        if isa(vals{indx}, 'containers.Map')
+          if nargin > 1
+            fmt_str = ['[', parent, '.%s]%s%s'];
+            item = sprintf(fmt_str, fn{indx}, newline, current_item_repr);
+            new_parent = [parent, '.', fn{indx}];
+          else
+            item = sprintf("[%s]%s%s", fn{indx}, newline, current_item_repr);
+          end
+        elseif iscell(vals{indx}) && all(cellfun(@(el) isa(el, 'containers.Map'), vals{indx}))
+          item = current_item_repr;
+        else
+          item = sprintf("%s = %s", fn{indx}, current_item_repr);
+        end
+        str = sprintf("%s%s%s", str, item, newline);
       end
 
     % structures
