@@ -1,11 +1,11 @@
 function str = jsonify(obj)
 	if isa(obj, 'containers.Map')
-		print_key_value = @(k) sprintf('"%s":%s', escape_str(k), toml.testing.jsonify(obj(k)));
+		print_key_value = @(k) ['"' escape_str(k) '":' toml.testing.jsonify(obj(k))];
 		keys_and_values = cellfun(print_key_value, keys(obj), 'uniformoutput', false);
 		str = ['{', strjoin(keys_and_values, ','), '}'];
 
 	elseif isstruct(obj)
-		print_key_value = @(k) sprintf('"%s":%s', escape_str(k), toml.testing.jsonify(obj.(k)));
+		print_key_value = @(k) ['"' escape_str(k) '":' toml.testing.jsonify(obj.(k))];
 		keys_and_values = cellfun(print_key_value, fieldnames(obj), 'uniformoutput', false);
 		str = ['{', strjoin(keys_and_values, ','), '}'];
 
@@ -61,14 +61,23 @@ function str = jsonify(obj)
 	end
 end
 
-function str = escape_str(str)
-	str = strrep(str, '\', '\\');
-	str = strrep(str, '"', '\"');
-	str = strrep(str, '/', '\/');
-	str = strrep(str, "\r", '\r');
-	str = strrep(str, "\f", '\f');
-	str = strrep(str, "\n", '\n');
-	str = strrep(str, "\t", '\t');
-	str = strrep(str, "\b", '\b');
-	str = strrep(str, char(0x1f), '\u001F');
+function out = escape_str(str)
+	out = '';
+	for idx = 1:numel(str)
+		c = str(idx);
+		if c == '"'
+			out = [out '\"'];
+		elseif c == '\'
+			out = [out '\\'];
+		elseif c < 0x20
+			out = [out '\u' sprintf('%04X', c)];
+		elseif c > 0xffff
+			u = uint32(c) - uint32(0x10000);
+			w1 = bitor(uint32(0xD800), bitand(u, uint32(0b11111111110000000000)));
+			w2 = bitor(uint32(0xDC00), bitand(u, uint32(0b00000000001111111111)));
+			out = [out '\u' sprintf('%04X', w1) '\u' sprintf('%04X', w2)];
+		else
+			out = [out c];
+		end
+	end
 end
