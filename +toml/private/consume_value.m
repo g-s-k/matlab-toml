@@ -8,28 +8,22 @@ function [val, str] = consume_value(str)
   elseif startsWith(str, '[')
     str = str(2:end);
     val = {};
-    first = true;
+    expecting_comma = false;
     while ~isempty(str)
       str = consume_comment(str);
 
-      if first
-        if startsWith(str, ',')
-          error('toml:LeadingComma', ...
-            'Comma found before first element in array.');
-        end
-      elseif ~startsWith(str, ']')
-        str = expect(str, ',');
-      end
-
-      str = trimstart(str, true);
       if startsWith(str, ']')
         break
-      end
-      
-      if ~startsWith(str, '#')
+      elseif expecting_comma
+        str = expect(str, ',');
+        expecting_comma = false;
+      elseif startsWith(str, ',')
+        error('toml:LeadingComma', ...
+          'Comma found before in array without an element before it.');
+      elseif ~startsWith(str, '#')
         [item, str] = consume_value(str);
         val{end+1} = item;
-        first = false;
+        expecting_comma = true;
       end
     end
 
