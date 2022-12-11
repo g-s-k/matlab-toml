@@ -74,10 +74,9 @@ function [val, str] = consume_value(str)
     [val, str] = consume_basic_string(str, true);
 
   elseif startsWith(str, '+')
-    [val, str] = consume_signed_value(str(2:end));
+    [val, str] = consume_signed_value(str(2:end), 1);
   elseif startsWith(str, '-')
-    [val, str] = consume_signed_value(str(2:end));
-    val = -val;
+    [val, str] = consume_signed_value(str(2:end), -1);
     
   elseif startsWith(str, "inf")
     val = Inf;
@@ -139,46 +138,7 @@ function [val, str] = consume_value(str)
 
     % number
     else
-      if startsWith(digits, '0') && numel(digits) > 1
-        error('toml:LeadingZero', ...
-          'Encountered a numeric literal with a leading zero.');
-      end
-
-      has_fractional = false;
-      has_exponent = false;
-
-      % float with fractional
-      if startsWith(str, '.')
-        has_fractional = true;
-        [frac_part, str] = consume_integer(str(2:end), 10);
-        digits = [digits '.' frac_part];
-      end
-
-      % float with exponential
-      if startsWith(str, 'e') || startsWith(str, 'E')
-        has_exponent = true;
-        str = str(2:end);
-        digits = [digits 'e'];
-
-        if startsWith(str, '+')
-          str = str(2:end);
-        elseif startsWith(str, '-')
-          digits = [digits '-'];
-          str = str(2:end);
-        end
-
-        [exp_part, str] = consume_integer(str, 10);
-        digits = [digits exp_part];
-      end
-      
-      val = str2num(strrep(digits, '_', ''));
-      if ~has_fractional && ~has_exponent
-        if numel(digits) > 1 && digits(1) == '0'
-          error('toml:LeadingZero', ...
-            'Encountered integer value with a leading zero.');
-        end
-        val = int64(val);
-      end
+      [val, str] = terminate_number(digits, str, 1);
     end
 
   else
@@ -187,16 +147,28 @@ function [val, str] = consume_value(str)
   end
 end
 
-function [num, str] = consume_signed_value(str)
-  if startsWith(str, '0b') || startsWith(str, '0o') || startsWith(str, '0x')
+function [num, str] = consume_signed_value(str, signum)
+  if isempty(str)
+    error('toml:SignWithNoValue', ...
+      'Sign operator was found without a value.');
+  elseif startsWith(str, '0b') || startsWith(str, '0o') || startsWith(str, '0x')
     error('toml:SignOnNonBase10', ...
       'Encountered a plus/minus sign on an unsigned int value.');
   elseif startsWith(str, '+') || startsWith(str, '-')
     error('toml:MultipleSigns', ...
       'Encountered multiple plus/minus signs in a row.');
-  end
-  [num, str] = consume_value(str);
-  if ~isnumeric(num)
+
+  elseif startsWith(str, 'inf')
+    num = Inf * signum;
+    str = str(4:end);
+  elseif startsWith(str, 'nan')
+    num = NaN * signum;
+    str = str(4:end);
+  elseif isstrprop(str(1), 'digit')
+    [digits, str] = consume_integer(str, 10);
+    [num, str] = terminate_number(digits, str, signum);
+
+  else
     error('toml:InvalidSign', ...
       'Encountered a plus/minus sign on a non-numeric value.');
   end
@@ -269,5 +241,49 @@ function [val, str] = consume_time(str, hour)
   if startsWith(str, '.')
     [sub_second, str] = consume_integer(str(2:end), 10);
     val = [val '.' sub_second(1:min(6, numel(sub_second)))];
+  end
+end
+
+function [val, str] = terminate_number(digits, str, signum)
+  if startsWith(digits, '0') && numel(digits) > 1
+    error('toml:LeadingZero', ...
+      'Encountered a numeric literal with a leading zero.');
+  end
+
+  has_fractional = false;
+  has_exponent = false;
+
+  % float with fractional
+  if startsWith(str, '.')
+    has_fractional = true;
+    [frac_part, str] = consume_integer(str(2:end), 10);
+    digits = [digits '.' frac_part];
+  end
+
+  % float with exponential
+  if startsWith(str, 'e') || startsWith(str, 'E')
+    has_exponent = true;
+    str = str(2:end);
+    digits = [digits 'e'];
+
+    if startsWith(str, '+')
+      str = str(2:end);
+    elseif startsWith(str, '-')
+      digits = [digits '-'];
+      str = str(2:end);
+    end
+
+    [exp_part, str] = consume_integer(str, 10);
+    digits = [digits exp_part];
+  end
+
+  val = str2num(strrep(digits, '_', '')) * signum;
+
+  if ~has_fractional && ~has_exponent
+    if numel(digits) > 1 && digits(1) == '0'
+      error('toml:LeadingZero', ...
+        'Encountered integer value with a leading zero.');
+    end
+    val = int64(val);
   end
 end

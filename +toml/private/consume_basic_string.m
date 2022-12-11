@@ -121,6 +121,12 @@ end
 function str = utf8ify(num)
   continued = @(num) bitor(uint32(0b10000000), bitand(uint32(0b00111111), num));
 
+  % check that it is scalar
+  if (num > 0xD7FF && num < 0xE000) || num > 0x10FFFF
+    error('toml:NonScalarCodepoint', ...
+      ['Non-scalar Unicode codepoint: `' sprintf('%X', num) '`']);
+  end
+
   if num < 0x80
     str = char(num);
   elseif num < 0x800

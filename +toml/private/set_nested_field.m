@@ -45,6 +45,15 @@ function obj = set_nested_field(obj, indx, val)
                   'Keys cannot be redefined.')
         end
       end
+
+      % annoying bug in octave requires assigning empty key twice
+      if isempty(indx{1}) && exist('OCTAVE_VERSION', 'builtin') > 0
+        try
+          obj(indx{1}) = val;
+        catch
+        end
+      end
+
       obj(indx{1}) = val;
     elseif iscell(obj)
       if ischar(indx{1})
