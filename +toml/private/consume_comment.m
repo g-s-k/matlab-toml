@@ -7,7 +7,7 @@ function out = consume_comment(in)
     if ~isempty(out)
       for idx = 1:numel(out)
         c = out(idx);
-        if c == newline || (c == "\r" && idx < numel(out) && out(idx+1) == newline)
+        if c == newline || (c == char(0xD) && idx < numel(out) && out(idx+1) == newline)
           out = trimstart(out(idx:end), true);
           return
         elseif c == 9
