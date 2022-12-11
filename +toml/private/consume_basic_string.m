@@ -51,10 +51,10 @@ function [content, str] = terminate_string(str, is_multiline)
             pieces{end+1} = sprintf(['\' c]);
           case 'u'
             [code_point, str] = get_hex_digits(str, 4);
-            pieces{end+1} = char(hex2dec(code_point));
+            pieces{end+1} = utf8ify(hex2dec(code_point));
           case 'U'
             [code_point, str] = get_hex_digits(str, 8);
-            pieces{end+1} = char(hex2dec(code_point));
+            pieces{end+1} = utf8ify(hex2dec(code_point));
           otherwise
             error('toml:ReservedEscapeSequence', ...
               ['Encountered reserved escape sequence `\\', c, '` in string.']);
@@ -115,5 +115,37 @@ function [digits, str] = get_hex_digits(str, count)
   if numel(digits) ~= count
     error('toml:InvalidUnicode', ...
       sprintf('Expected %d hex digits for escape, got %d', count, numel(digits)));
+  end
+end
+
+function str = utf8ify(num)
+  continued = @(num) bitor(uint32(0b10000000), bitand(uint32(0b00111111), num));
+
+  if num < 0x80
+    str = char(num);
+  elseif num < 0x800
+    num = uint32(num);
+    str = char([ ...
+      bitor(uint32(0b11000000), bitshift(num, -6)), ...
+      continued(num) ...
+    ]);
+  elseif num < 0x10000
+    num = uint32(num);
+    str = char([ ...
+      bitor(uint32(0b11100000), bitshift(num, -12)), ...
+      continued(bitshift(num, -6)), ...
+      continued(num) ...
+    ]);
+  elseif num < 0x110000
+    num = uint32(num);
+    str = char([ ...
+      bitor(uint32(0b11110000), bitshift(num, -18)), ...
+      continued(bitshift(num, -12)), ...
+      continued(bitshift(num, -6)), ...
+      continued(num) ...
+    ]);
+  else
+    error('toml:InvalidCodePoint', ...
+      'Encountered a Unicode code point that is not in the valid range.');
   end
 end
