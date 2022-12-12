@@ -12,9 +12,11 @@ function obj = set_nested_field(obj, indx, val)
       if isKey(obj, indx{:})
         switch class(obj(indx{:}))
           case 'containers.Map'
-            if ~isa(val, 'containers.Map') || isempty(keys(val))
+            if ~isa(val, 'containers.Map')
               error('toml:RedefinedTable', ...
                     'Tables cannot be redefined.')
+            elseif val.Count == 0
+              return
             end
           case 'cell'
             if iscell(val) && ...
