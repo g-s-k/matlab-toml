@@ -49,7 +49,7 @@ function obj = set_nested_field(obj, indx, val)
       end
 
       % annoying bug in octave requires assigning empty key twice
-      if isempty(indx{1}) && exist('OCTAVE_VERSION', 'builtin') > 0
+      if isempty(indx{1}) && is_octave()
         try
           obj(indx{1}) = val;
         catch

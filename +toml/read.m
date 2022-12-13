@@ -6,8 +6,17 @@
 %   See also FILEREAD, TOML.DECODE
 
 function toml_data = read(filename)
-  raw_text = '';
+  if is_octave()
+    raw_text = read_utf8(filename);
+  else
+    raw_text = fileread(filename, Encoding="UTF-8");
+  end
 
+  toml_data = toml.decode(raw_text);
+end
+
+function raw_text = read_utf8(filename)
+  raw_text = '';
   fid = fopen(filename, 'r');
   while ~feof(fid)
     c = fread(fid, 1);
@@ -24,8 +33,6 @@ function toml_data = read(filename)
       end
     end
   end
-
-  toml_data = toml.decode(raw_text);
 end
 
 function b = get_continuation_byte(fid)
