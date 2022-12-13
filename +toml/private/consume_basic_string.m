@@ -49,12 +49,20 @@ function [content, str] = terminate_string(str, is_multiline)
             pieces{end+1} = c;
           case { 'b', 't', 'r', 'f', 'n' }
             pieces{end+1} = sprintf(['\' c]);
-          case 'u'
-            [code_point, str] = get_hex_digits(str, 4);
-            pieces{end+1} = utf8ify(hex2dec(code_point));
-          case 'U'
-            [code_point, str] = get_hex_digits(str, 8);
-            pieces{end+1} = utf8ify(hex2dec(code_point));
+          case { 'u', 'U' }
+            num_digits = 4;
+            if c == 'U'
+              num_digits = 8;
+            end
+            [code_point, str] = get_hex_digits(str, num_digits);
+            code_point = uint32(hex2dec(code_point));
+            if is_octave()
+              pieces{end+1} = utf8ify(code_point);
+            elseif code_point <= uint32(0xFFFF)
+              pieces{end+1} = char(code_point);
+            else
+              pieces{end+1} = char([bitshift(code_point, -16), bitand(uint32(0xFFFF), code_point)]);
+            end
           otherwise
             error('toml:ReservedEscapeSequence', ...
               ['Encountered reserved escape sequence `\\', c, '` in string.']);
