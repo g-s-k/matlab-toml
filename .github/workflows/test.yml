@@ -12,3 +12,4 @@ jobs:
     - uses: g-s-k/toml-test-action@v1.0.2
       with:
         command: ./ci.bash /home/runner/work/_actions/matlab-actions/run-tests/v1/dist/bin/glnxa64/run-matlab-command
+        skip: 'invalid/encoding/bad-utf8-*'
