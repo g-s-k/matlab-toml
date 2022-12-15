@@ -56,8 +56,10 @@ function [content, str] = terminate_string(str, is_multiline)
             end
             [code_point, str] = get_hex_digits(str, num_digits);
             code_point = uint32(hex2dec(code_point));
+            % still run this even in matlab, to validate code point
+            utf8_validated = utf8ify(code_point);
             if is_octave()
-              pieces{end+1} = utf8ify(code_point);
+              pieces{end+1} = utf8_validated;
             elseif code_point <= uint32(0xFFFF)
               pieces{end+1} = char(code_point);
             else
