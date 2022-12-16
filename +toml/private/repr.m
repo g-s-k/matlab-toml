@@ -15,7 +15,7 @@ function str = repr(obj, parent)
     % strings
     case 'char'
       if isrow(obj) || isempty(obj)
-        str = ['"', obj, '"'];
+        str = ['"', strrep(strrep(obj, '\', '\\'), '"', '\"'), '"'];
       else
         str = repr(reshape(cellstr(obj), 1, []));
       end
