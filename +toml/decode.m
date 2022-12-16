@@ -7,69 +7,82 @@
 %   See also TOML.READ
 
 function obj_out = decode(toml_str)
-%% pre-emptive checking
-  % split on newlines
-  toml_lines = strsplit(toml_str, {'\n', '\r'});
-  % throw out comments
-  de_commenter = @(elem) deblank(decomment(elem));
-  toml_decommented = cellfun(de_commenter, toml_lines, ...
-                             'UniformOutput', false);
-  % strip out empty lines
-  toml_nonempty = toml_decommented(~cellfun(@isempty, toml_decommented));
-  % check for invalid lines
-  cellfun(@checkline, toml_nonempty);
-
-%% parsing
-  obj_out = struct();
-  current_line = 1;
+  obj_out = containers.Map();
   location_stack = {};
+  array_locations = {};
+  table_locations = {};
+  immutable_locations = {};
 
-  while current_line <= length(toml_nonempty)
-    % recognize a section and store it semantically
-    n_brackets = is_section(toml_nonempty{current_line});
-    if n_brackets
-      section_name = strtrim(toml_nonempty{current_line});
-      section_name = section_name(n_brackets+1:end-n_brackets);
-      location_stack = parsekey(section_name);
+  while true
+    toml_str = consume_comment(toml_str);
+    if isempty(toml_str)
+      break
+    end
+
+    if startsWith(toml_str, '[[') % array
+      toml_str = toml_str(3:end);
+      [location_stack, toml_str] = consume_key(toml_str, ']]');
       location_stack = adjust_key_stack(obj_out, location_stack);
-      % is it a table or an array of tables?
-      if n_brackets == 1
-        obj_out = set_nested_field(obj_out, location_stack, struct());
-      else
-        % if it already exists, append
-        try
-          existing_val = get_nested_field(obj_out, location_stack);
-          location_stack{end + 1} = length(existing_val) + 1;
-          obj_out = set_nested_field(obj_out, location_stack, struct());
-        % if not, pre-populate
-        catch
-          obj_out = set_nested_field(obj_out, location_stack, {struct()});
-          location_stack{end + 1} = 1;
-        end
-      end
-      current_line = current_line + 1;
-      continue
-    end
 
-    % recognize key-value pairs and add them to the struct
-    [key, value] = strtok(toml_nonempty{current_line}, '=');
-    key_seq = parsekey(key);
-    % ensure we have a complete value
-    force = false;
-    while true
-      value_fix = parsevalue(value, force);
-      if isempty(value_fix) && ~iscell(value_fix)
-        if current_line < length(toml_nonempty)
-          current_line = current_line + 1;
-          value = sprintf('%s\n%s', value, toml_nonempty{current_line});
-        else
-          force = true;
-        end
-      else
-        break
+      check_stack_for_conflict(immutable_locations, location_stack, 1);
+      try
+        existing_val = get_nested_field(obj_out, location_stack);
+        location_stack{end+1} = length(existing_val) + 1;
+        obj_out = set_nested_field(obj_out, location_stack, containers.Map());
+      catch e
+        array_locations{end+1} = location_stack;
+        location_stack{end+1} = 1;
+        obj_out = set_nested_field(obj_out, location_stack, containers.Map());
+      end
+
+      toml_str = expect_line_break_or_comment_or_eof(toml_str);
+
+    elseif startsWith(toml_str, '[') % table
+      toml_str = toml_str(2:end);
+      [location_stack, toml_str] = consume_key(toml_str, ']');
+      location_stack = adjust_key_stack(obj_out, location_stack);
+
+      check_stack_for_conflict(immutable_locations, location_stack, 1);
+      check_stack_for_conflict(array_locations, location_stack);
+      check_stack_for_conflict(table_locations, location_stack);
+      table_locations{end+1} = location_stack;
+
+      obj_out = set_nested_field(obj_out, location_stack, containers.Map());
+      toml_str = expect_line_break_or_comment_or_eof(toml_str);
+
+    elseif startsWith(toml_str, '"') || startsWith(toml_str, "'") || is_key_char(toml_str(1)) % key / value pair
+      [key_seq, toml_str] = consume_key(toml_str, '=');
+      [value_fix, toml_str] = consume_value(toml_str);
+      this_location = [location_stack key_seq];
+
+      check_stack_for_conflict(immutable_locations, this_location);
+      check_stack_for_conflict(array_locations, this_location, numel(location_stack) + 1);
+      check_stack_for_conflict(table_locations, this_location, numel(location_stack) + 1);
+      for depth = 1:numel(key_seq)
+        immutable_locations{end+1} = [location_stack, key_seq(1:depth)];
+      end
+
+      obj_out = set_nested_field(obj_out, this_location, value_fix);
+      toml_str = expect_line_break_or_comment_or_eof(toml_str);
+      
+    elseif ~startsWith(toml_str, '#')
+      error('toml:UnexpectedStatement', ...
+        ['Found unrecognized statement: ' toml_str]);
+    end
+  end
+end
+
+function check_stack_for_conflict(stacks, current, min_depth)
+  if nargin < 3
+    min_depth = numel(current);
+  end
+
+  for idx = 1:numel(stacks)
+    for depth = min_depth:numel(current)
+      if isequal(stacks{idx}, current(1:depth))
+        error('toml:NameCollision', ...
+          ['Assigning to existing location `' strjoin(cellfun(@num2str, current, 'uniformoutput', false), '.') '`']);
       end
     end
-    obj_out = set_nested_field(obj_out, [location_stack, key_seq], value_fix);
-    current_line = current_line + 1;
   end
 end

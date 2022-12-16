@@ -22,6 +22,25 @@ function toml_str = encode(m_strct)
       error('toml:NonScalarStruct', ...
             'TOML base table must be scalar.')
     end
+  elseif isa(m_strct, 'containers.Map')
+    top_level = containers.Map();
+    rest = containers.Map();
+
+    % first, deal with all the top-level stuff that's not a table or array of tables
+    key_list = keys(m_strct);
+    for idx = 1:numel(key_list)
+      key = key_list{idx};
+      val = m_strct(key);
+
+      if isa(val, 'containers.Map') || (iscell(val) && all(cellfun(@(el) isa(el, 'containers.Map'), val)))
+        rest(key) = val;
+      else
+        top_level(key) = val;
+      end
+    end
+
+    % serialize it recursively
+    toml_str = [repr(top_level) newline repr(rest)];
   else
     error('toml:InvalidBaseType', ...
           'TOML base variable must be a struct.')

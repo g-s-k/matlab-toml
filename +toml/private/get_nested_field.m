@@ -1,7 +1,7 @@
-% GET_NESTED_FIELD get a value from inside a struct
+% GET_NESTED_FIELD get a value from inside a Map
 %
 %   GET_NESTED_FIELD(obj, indx) follows the pointer `indx` into the
-%   struct or cell `obj`, and retrieves the value at the pointed
+%   map or cell `obj`, and retrieves the value at the pointed
 %   location, if it exists. If any member of the pointer chain does not
 %   exist, it raises the error 'toml:NoSuchIndex'.
 %
@@ -14,8 +14,8 @@ function value = get_nested_field(obj, indx)
       if numel(obj) < indx{1}
         error('toml:NoSuchIndex', 'This index does not exist.')
       end
-    case 'struct'
-      if ~isfield(obj, indx{1})
+    case 'containers.Map'
+      if ~isKey(obj, indx{1})
         error('toml:NoSuchIndex', 'This index does not exist.')
       end
   end
@@ -32,7 +32,7 @@ function val = get_item(obj, indx2)
   switch class(obj)
     case 'cell'
       val = obj{indx2};
-    case 'struct'
-      val = obj.(indx2);
+    case 'containers.Map'
+      val = obj(indx2);
   end
 end

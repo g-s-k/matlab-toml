@@ -1,3 +1,6 @@
 *.mltbx
 *.prj
 *.png
+
+.input.toml
+.output.toml
