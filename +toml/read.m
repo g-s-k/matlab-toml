@@ -9,7 +9,8 @@ function toml_data = read(filename)
   if is_octave()
     raw_text = read_utf8(filename);
   else
-    raw_text = fileread(filename, Encoding="UTF-8");
+    fid = fopen(filename, 'r', 'n', 'UTF-8');
+    raw_text = fread(fid, [1 inf], '*char');
   end
 
   toml_data = toml.decode(raw_text);
