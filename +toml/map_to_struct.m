@@ -11,14 +11,16 @@
 %   See also MATLAB.LANG.MAKEVALIDNAME, CONTAINERS.MAP, STRUCT
 
 function s = map_to_struct(map, varargin)
-  s = struct();
-  for key = map.keys()
-    value = map(key{:});
-    if isa(value, 'containers.Map')
-      value = toml.map_to_struct(value, varargin{:});
+  if iscell(map)
+    s = cellfun(@(m) toml.map_to_struct(m, varargin{:}), map, 'UniformOutput', false);
+  elseif isa(map, 'containers.Map')
+    s = struct();
+    for key = map.keys()
+      value = toml.map_to_struct(map(key{:}), varargin{:});
+      key = matlab.lang.makeValidName(key{:}, varargin{:});
+      s.(key) = value;
     end
-
-    key = matlab.lang.makeValidName(key{:}, varargin{:});
-    s.(key) = value;
+  else
+    s = map;
   end
 end
