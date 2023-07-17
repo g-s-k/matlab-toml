@@ -20,6 +20,14 @@ function str = repr(obj, parent)
         str = repr(reshape(cellstr(obj), 1, []));
       end
 
+    case 'string'
+      if numel(obj) == 1
+        str = ['"', strrep(strrep(obj, '\', '\\'), '"', '\"'), '"'];
+      else
+        cel = arrayfun(@repr, obj, 'uniformoutput', false);
+        str = ['[', strjoin(cel, ', '), ']'];
+      end
+
     % Booleans
     case 'logical'
       reprs = {'false', 'true'};
