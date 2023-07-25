@@ -10,13 +10,13 @@ function map = struct_to_map(struct)
         fields = fieldnames(struct);
         for i = 1 : numel(fields)
             key = fields{i};
-            value = NewPreferences.struct_to_map(struct.(key));
+            value = toml.struct_to_map(struct.(key));
             map(key) = value;
         end
     elseif iscell(struct)
         map = cell(size(struct));
         for i = 1 : numel(struct)
-            map{i} = NewPreferences.struct_to_map(struct{i});
+            map{i} = toml.struct_to_map(struct{i});
         end
     else
         map = struct;
