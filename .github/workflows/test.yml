@@ -6,10 +6,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: matlab-actions/setup-matlab@v2-beta
+    - uses: actions/checkout@v4
+    - uses: matlab-actions/setup-matlab@v2
     - uses: matlab-actions/run-tests@v1
-    - uses: g-s-k/toml-test-action@v1.0.2
+    - uses: g-s-k/toml-test-action@v1.1.0
       with:
         command: ./ci.bash /home/runner/work/_actions/matlab-actions/run-tests/v1/dist/bin/glnxa64/run-matlab-command
         skip: 'invalid/encoding/bad-utf8-*'
+        parallel: 1
