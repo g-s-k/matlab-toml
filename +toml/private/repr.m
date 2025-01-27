@@ -22,7 +22,12 @@ function str = repr(obj, parent)
 
     case 'string'
       if numel(obj) == 1
-        str = ['"', strrep(strrep(obj, '\', '\\'), '"', '\"'), '"'];
+        if exist('convertStringsToChars') == 5
+          op = @convertStringsToChars;
+        else
+          op = @char;
+        end
+        str = ['"', op(strrep(strrep(obj, '\', '\\'), '"', '\"')), '"'];
       else
         cel = arrayfun(@repr, obj, 'uniformoutput', false);
         str = ['[', strjoin(cel, ', '), ']'];
